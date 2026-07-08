@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Estrategia de Marketing — Humanware Group</title>
+<link rel="icon" href="assets/icon-color.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <img class="topbar-logo" src="assets/logo-white.png" alt="Humanware Group">
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">Panel de Estrategia de Marketing<br><span>Didacta · One Click · Academy — Jul 2026 a Jun 2027</span></div>
+    <div class="topbar-progress">
+      <div class="topbar-progress-text">
+        <div class="topbar-progress-label">Avance del plan</div>
+        <div class="topbar-progress-value" id="overallLabel">—</div>
+      </div>
+      <div class="topbar-progress-track">
+        <div class="topbar-progress-fill" id="overallFill" style="width:0%"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <div class="section-head">
+      <div class="section-title">Pipeline de leads calificados</div>
+      <div class="section-sub">Junio 2026 · fuente CRM</div>
+      <div class="section-note">Foco del plan: <strong>más leads calificados para Didacta</strong></div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="filters-row">
+      <div class="filters-list" id="filtersList"></div>
+      <div class="status-legend">
+        <span class="status-legend-label">Estado:</span>
+        <span class="status-legend-item"><span class="status-legend-dot hecho"></span>Hecho</span>
+        <span class="status-legend-item"><span class="status-legend-dot progreso"></span>En progreso</span>
+        <span class="status-legend-item"><span class="status-legend-dot pendiente"></span>Pendiente</span>
+      </div>
+    </div>
+
+    <div class="product-row" id="productRow"></div>
+
+    <div class="units-grid" id="unitsGrid"></div>
+
+  </main>
+
+  <div class="drawer-overlay" id="drawerOverlay">
+    <div class="drawer-panel" id="drawerPanel"></div>
+  </div>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

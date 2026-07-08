@@ -1,25 +1,69 @@
-# CODING AGENTS: READ THIS FIRST
+# Panel de Estrategia de Marketing — Humanware Group
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Panel interactivo con la estrategia de marketing de Humanware Group: organigrama
+**Unidad → Producto → Objetivo → Acción**, con filtros, progreso y una vista de
+detalle por acción. Implementado a partir del prototipo de Claude Design en
+`project/Panel Marketing Humanware.dc.html` (ver `chats/chat1.md` para el
+historial de decisiones de producto).
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## Arquitectura
 
-## What you should do — IMPORTANT
+- **`frontend/`** — sitio estático (HTML/CSS/JS vanilla, sin build step).
+- **`backend/`** — servidor Express que sirve el frontend y expone una API
+  para el estado de las acciones (`Pendiente` / `En progreso` / `Hecho`),
+  persistido en SQLite (`node:sqlite`) para que todo el equipo vea el mismo
+  avance en tiempo casi real (polling cada 20s + al volver a la pestaña).
+- Los filtros de unidad/producto y qué unidades/objetivos están
+  expandidos son preferencias de navegación de cada persona — se guardan en
+  el `localStorage` del navegador, no en el servidor.
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+## Cómo correrlo
 
-**Read `project/Panel Marketing Humanware.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+```bash
+cd backend
+npm install
+npm start
+```
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+Abrí `http://localhost:3000` (puerto configurable con la variable de entorno `PORT`).
 
-## About the design files
+La base SQLite se crea sola en `backend/data/panel.sqlite` la primera vez que
+corre el servidor.
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## Estructura de datos
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+El contenido del plan (unidades, productos, objetivos y acciones) vive en
+`frontend/js/data.js`. Para agregar o editar objetivos/acciones del plan,
+se edita ese archivo — no requiere tocar el backend.
 
-## Bundle contents
+## API
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Dashboard interactivo Humanware Group` project files (HTML prototypes, assets, components)
+- `GET /api/estados` → `{ "<actionId>": "pendiente" | "progreso" | "hecho", ... }`
+- `PUT /api/estados/:id` con body `{ "status": "pendiente" | "progreso" | "hecho" }`
+
+No tiene autenticación: cualquiera con acceso a la URL puede ver y actualizar
+el estado de las acciones.
+
+## Deploy (para que el equipo lo use)
+
+Recomendado: **Railway**, porque hostea el backend con Node.js corriendo
+siempre y soporta un volumen persistente para que la base SQLite no se borre
+en cada deploy.
+
+1. Subí este repo a GitHub.
+2. En [railway.app](https://railway.app), creá un proyecto → **Deploy from GitHub repo** → elegí este repo.
+3. En la configuración del servicio, poné **Root Directory** = `backend`.
+4. Agregá un **Volume** (Settings → Volumes) con mount path `/data`.
+5. Agregá la variable de entorno `DATA_DIR=/data`.
+6. Railway detecta el `package.json`, corre `npm install` y `npm start` solo.
+7. Te da una URL pública (tipo `https://tu-proyecto.up.railway.app`) — esa es la que compartís con el equipo.
+
+Variables de entorno soportadas:
+- `PORT` — puerto del servidor (Railway la setea sola).
+- `DATA_DIR` — carpeta donde vive `panel.sqlite` (default: `backend/data`, para desarrollo local).
+
+## Bundle de diseño original
+
+`project/` y `chats/` son el material exportado desde Claude Design que sirvió
+de base para esta implementación (prototipo HTML/CSS/JS y transcripción de la
+conversación de diseño). Se conservan como referencia histórica.
