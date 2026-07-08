@@ -100,6 +100,7 @@ async function loadPlan() {
       if (!validIds.has(id)) { state.today.delete(id); prunedToday = true; }
     });
     if (prunedToday) saveToday();
+    refreshDetailIfOpen();
   } catch (e) {
     console.warn("No se pudo cargar el plan desde el servidor.", e);
   }
@@ -178,6 +179,30 @@ function cycleEstado(id, current) {
   setEstado(id, next);
 }
 
+async function persistNota(id, hecho) {
+  try {
+    const res = await fetch(`api/notas/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hecho }),
+    });
+    if (!res.ok) throw new Error("bad response " + res.status);
+  } catch (e) {
+    console.warn("No se pudo guardar la bitácora en el servidor; el cambio quedó solo en esta pestaña.", e);
+  }
+}
+
+function toggleNota(accionId, notaId, hecho) {
+  const ctx = findAccionContext(accionId);
+  const nota = ctx && ctx.accion.notas.find((n) => n.id === notaId);
+  if (nota) nota.hecho = hecho;
+  if (state.detail && state.detail.id === accionId) {
+    state.detail = { ...state.detail, notas: ctx.accion.notas };
+  }
+  render();
+  persistNota(notaId, hecho);
+}
+
 function toggleUnit(id) {
   state.expandedUnits = { ...state.expandedUnits, [id]: !state.expandedUnits[id] };
   saveUi();
@@ -211,6 +236,7 @@ function openDetail(actionId) {
     id: a.id, unitId: unit.id, unitName: unit.nombre, iso: unit.iso, accent: unit.accent, headBg: unit.headBg, chipBg: unit.chipBg,
     groupName, objetivo: o.titulo, meta: o.meta,
     texto: a.titulo, responsable: a.responsable, plazo: a.plazo, canal: a.canal, estado: a.status,
+    notas: a.notas || [],
   };
   render();
 }
@@ -218,6 +244,23 @@ function openDetail(actionId) {
 function closeDetail() {
   state.detail = null;
   render();
+}
+
+// Keeps an open drawer in sync after loadPlan() refetches — a teammate may have
+// added a bitácora entry or changed the status while you had it open.
+function refreshDetailIfOpen() {
+  if (!state.detail) return;
+  const ctx = findAccionContext(state.detail.id);
+  if (!ctx) { state.detail = null; return; }
+  state.detail = { ...state.detail, estado: ctx.accion.status, notas: ctx.accion.notas || [] };
+}
+
+function formatFecha(iso) {
+  try {
+    return new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+  } catch (e) {
+    return "";
+  }
 }
 
 function openModal(kind, ctx) {
@@ -514,6 +557,16 @@ function renderDrawer() {
       </button>
     `;
   }).join("");
+  const notas = d.notas || [];
+  const notasHtml = notas.length
+    ? notas.map((n) => `
+        <label class="nota-row${n.hecho ? " done" : ""}">
+          <input type="checkbox" data-action="toggle-nota" data-accion-id="${d.id}" data-nota-id="${n.id}" ${n.hecho ? "checked" : ""}>
+          <span class="nota-texto">${esc(n.texto)}</span>
+          <span class="nota-fecha">${formatFecha(n.createdAt)}</span>
+        </label>
+      `).join("")
+    : `<div class="bitacora-empty">Sin entradas todavía.</div>`;
   panel.innerHTML = `
     <div class="drawer-head" style="--head-bg:${d.headBg}">
       <div class="drawer-head-top">
@@ -538,6 +591,12 @@ function renderDrawer() {
       <div class="drawer-label drawer-estado-label">Estado</div>
       <div class="drawer-estado-row">${estadoBtns}</div>
       <div class="drawer-nota">Acción del canal ${esc(d.canal)}. Contribuye al objetivo "${esc(d.objetivo)}" (meta: ${esc(d.meta)}). Tocá un estado para actualizar el avance; se guarda para todo el equipo.</div>
+      <div class="drawer-label drawer-bitacora-label">Bitácora</div>
+      <div class="bitacora-list">${notasHtml}</div>
+      <form id="notaForm" class="bitacora-form" data-accion-id="${d.id}">
+        <input type="text" name="texto" placeholder="Agregar una entrada..." required>
+        <button type="submit" class="btn btn-primary">Agregar</button>
+      </form>
     </div>
   `;
   overlay.classList.add("visible");
@@ -725,6 +784,19 @@ document.addEventListener("click", (e) => {
 });
 
 document.addEventListener("submit", async (e) => {
+  if (e.target.id === "notaForm") {
+    e.preventDefault();
+    const accionId = e.target.dataset.accionId;
+    const texto = new FormData(e.target).get("texto");
+    if (!texto || !texto.trim()) return;
+    try {
+      await apiRequest("POST", "api/notas", { accionId, texto: texto.trim() });
+      await loadPlan();
+    } catch (err) {
+      console.warn("No se pudo guardar la entrada de la bitácora.", err);
+    }
+    return;
+  }
   if (e.target.id !== "modalForm") return;
   e.preventDefault();
   const m = state.modal;
@@ -743,6 +815,12 @@ document.addEventListener("submit", async (e) => {
     state.modalError = err.message || "Ocurrió un error.";
     render();
   }
+});
+
+document.addEventListener("change", (e) => {
+  const target = e.target.closest('[data-action="toggle-nota"]');
+  if (!target) return;
+  toggleNota(target.dataset.accionId, target.dataset.notaId, target.checked);
 });
 
 document.getElementById("drawerOverlay").addEventListener("click", (e) => {

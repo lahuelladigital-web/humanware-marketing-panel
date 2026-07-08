@@ -72,6 +72,16 @@ db.exec(`
     color TEXT NOT NULL DEFAULT '#475569'
   );
 
+  -- Manual, append-only progress log per acción; entries are never deleted so the
+  -- history of what was done stays intact.
+  CREATE TABLE IF NOT EXISTS notas (
+    id TEXT PRIMARY KEY,
+    accion_id TEXT NOT NULL REFERENCES acciones(id) ON DELETE CASCADE,
+    texto TEXT NOT NULL,
+    hecho INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
   -- legacy table from the previous status-only storage; kept only so the
   -- one-time seed below can recover in-progress statuses, then unused.
   CREATE TABLE IF NOT EXISTS estados (
@@ -164,6 +174,7 @@ function getPlan() {
   const productos = db.prepare("SELECT * FROM productos ORDER BY rowid").all();
   const objetivos = db.prepare("SELECT * FROM objetivos ORDER BY rowid").all();
   const acciones = db.prepare("SELECT * FROM acciones ORDER BY rowid").all();
+  const notas = db.prepare("SELECT * FROM notas ORDER BY rowid").all();
 
   return unidades.map((u) => ({
     id: u.id,
@@ -196,6 +207,9 @@ function getPlan() {
             plazo: a.plazo,
             canal: a.canal,
             status: a.status,
+            notas: notas
+              .filter((n) => n.accion_id === a.id)
+              .map((n) => ({ id: n.id, texto: n.texto, hecho: !!n.hecho, createdAt: n.created_at })),
           })),
       })),
   }));
@@ -305,6 +319,19 @@ function deleteStatItem(id) {
   db.prepare("DELETE FROM stat_items WHERE id = ?").run(id);
 }
 
+function createNota({ accionId, texto }) {
+  const id = genId("n");
+  db.prepare(`INSERT INTO notas (id, accion_id, texto, hecho, created_at) VALUES (?, ?, ?, 0, ?)`).run(
+    id, accionId, texto, new Date().toISOString()
+  );
+  return { id };
+}
+
+function setNotaHecho(id, hecho) {
+  const result = db.prepare("UPDATE notas SET hecho = ? WHERE id = ?").run(hecho ? 1 : 0, id);
+  return result.changes > 0;
+}
+
 module.exports = {
   getPlan,
   getStatCards,
@@ -317,6 +344,8 @@ module.exports = {
   createAccion,
   deleteAccion,
   setEstado,
+  createNota,
+  setNotaHecho,
   createStatCard,
   deleteStatCard,
   createStatItem,

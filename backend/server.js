@@ -100,6 +100,24 @@ app.delete("/api/acciones/:id", requireAdmin, (req, res) => {
   res.status(204).end();
 });
 
+// ---------- bitácora (notas) ----------
+// Append-only by design (see db.js): no delete endpoint, entries are never removed.
+
+app.post("/api/notas", (req, res) => {
+  const { accionId, texto } = req.body || {};
+  if (!nonEmptyString(accionId) || !nonEmptyString(texto)) {
+    return res.status(400).json({ error: "Falta la acción o el texto de la entrada." });
+  }
+  res.status(201).json(db.createNota({ accionId, texto: texto.trim() }));
+});
+
+app.put("/api/notas/:id", (req, res) => {
+  const { hecho } = req.body || {};
+  const found = db.setNotaHecho(req.params.id, !!hecho);
+  if (!found) return res.status(404).json({ error: "Entrada no encontrada." });
+  res.json({ id: req.params.id, hecho: !!hecho });
+});
+
 // ---------- pipeline stats ----------
 
 app.post("/api/stat-cards", (req, res) => {

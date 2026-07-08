@@ -56,6 +56,10 @@ más abajo); agregar contenido no la pide.
   (y lo que cuelga de ella). Requiere el header `x-admin-password` con el
   valor de `ADMIN_PASSWORD`.
 - `PUT /api/acciones/:id/estado` con body `{ "status": "pendiente" | "progreso" | "hecho" }`.
+- `POST /api/notas` con body `{ "accionId", "texto" }` — agrega una entrada a la
+  bitácora de esa acción. `PUT /api/notas/:id` con body `{ "hecho": true|false }`
+  tilda/destilda una entrada. No hay borrado de entradas: la bitácora es
+  intencionalmente de solo agregar, para no perder el historial.
 
 No tiene autenticación de usuarios: cualquiera con acceso a la URL puede ver
 y actualizar el plan. Borrar además requiere la contraseña compartida.
