@@ -18,7 +18,7 @@ const state = {
   expandedUnits: { grupo: false, didacta: true, oneclick: false, academy: false, consultoria: false },
   expandedObjs: {},
   expandedStatItems: {},
-  unitTab: "objetivos",
+  unitTab: {},
   today: new Set(),
   detail: null,
   modal: null,
@@ -237,8 +237,8 @@ function setProduct(p) {
   render();
 }
 
-function setUnitTab(tab) {
-  state.unitTab = tab;
+function setUnitTab(unitId, tab) {
+  state.unitTab = { ...state.unitTab, [unitId]: tab };
   render();
 }
 
@@ -550,6 +550,7 @@ function renderUnit(unit, single) {
   const upct = uTot ? Math.round((uDone / uTot) * 100) : 0;
   const spanFull = unit.root || single;
   const caretClass = expanded ? " open" : "";
+  const tab = state.unitTab[unit.id] || "objetivos";
 
   return `
     <div class="unit-card${spanFull ? " span-full" : ""}">
@@ -573,13 +574,11 @@ function renderUnit(unit, single) {
             <button class="text-btn" data-action="open-modal" data-modal-kind="add-producto" data-unidad-id="${unit.id}">+ Producto</button>
             <button class="text-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="unidad" data-entity-id="${unit.id}" data-entity-label="${esc(unit.nombre)}">🗑 Borrar unidad</button>
           </div>
-          ${single ? `
-            <div class="unit-view-tabs">
-              <button class="unit-tab-btn${state.unitTab === "objetivos" ? " active" : ""}" data-action="set-unit-tab" data-tab="objetivos">Por objetivo</button>
-              <button class="unit-tab-btn${state.unitTab === "todas" ? " active" : ""}" data-action="set-unit-tab" data-tab="todas">Todas las acciones</button>
-            </div>
-          ` : ""}
-          ${single && state.unitTab === "todas" ? renderFlatAcciones(unit, groups) : groups.map((g) => renderGroup(unit, g)).join("")}
+          <div class="unit-view-tabs">
+            <button class="unit-tab-btn${tab === "objetivos" ? " active" : ""}" data-action="set-unit-tab" data-unit-id="${unit.id}" data-tab="objetivos">Por objetivo</button>
+            <button class="unit-tab-btn${tab === "todas" ? " active" : ""}" data-action="set-unit-tab" data-unit-id="${unit.id}" data-tab="todas">Todas las acciones</button>
+          </div>
+          ${tab === "todas" ? renderFlatAcciones(unit, groups) : groups.map((g) => renderGroup(unit, g)).join("")}
         </div>
       ` : ""}
     </div>
@@ -826,7 +825,7 @@ document.addEventListener("click", (e) => {
       setProduct(target.dataset.productId);
       break;
     case "set-unit-tab":
-      setUnitTab(target.dataset.tab);
+      setUnitTab(target.dataset.unitId, target.dataset.tab);
       break;
     case "set-status":
       setEstado(target.dataset.actionId, target.dataset.status);
