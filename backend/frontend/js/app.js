@@ -17,17 +17,30 @@ const state = {
   product: null,
   expandedUnits: { grupo: false, didacta: true, oneclick: false, academy: false, consultoria: false },
   expandedObjs: {},
+  today: new Set(),
   detail: null,
   modal: null,
   modalError: null,
 };
 
-// Maps action id -> { accion, unit, group, objetivo }, all references into state.plan.
-// Rebuilt on every render() so status updates can mutate state.plan in place.
-let actionIndex = new Map();
-
 function esc(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// Finds an acción anywhere in the plan regardless of the active filter — used by the
+// "today" panel, status updates and the detail drawer, none of which should be limited
+// to whatever unit happens to be visible right now.
+function findAccionContext(accionId) {
+  for (const unit of state.plan.unidades) {
+    for (const o of unit.objetivos) {
+      const a = o.acciones.find((x) => x.id === accionId);
+      if (a) {
+        const groupName = o.prod === "all" ? "Transversal" : (unit.productos.find((p) => p.id === o.prod)?.nombre || "");
+        return { accion: a, unit, objetivo: o, groupName };
+      }
+    }
+  }
+  return null;
 }
 
 function loadUi() {
@@ -49,6 +62,26 @@ function saveUi() {
   } catch (e) { /* storage unavailable (private mode, quota) — UI state just won't persist */ }
 }
 
+function loadToday() {
+  try {
+    state.today = new Set(JSON.parse(localStorage.getItem("hwgmkt.today") || "[]"));
+  } catch (e) { /* ignore malformed local storage */ }
+}
+
+function saveToday() {
+  try {
+    localStorage.setItem("hwgmkt.today", JSON.stringify([...state.today]));
+  } catch (e) { /* storage unavailable — the "today" marks just won't persist */ }
+}
+
+function toggleToday(id) {
+  const next = new Set(state.today);
+  if (next.has(id)) next.delete(id); else next.add(id);
+  state.today = next;
+  saveToday();
+  render();
+}
+
 async function loadPlan() {
   try {
     const res = await fetch("api/plan");
@@ -59,6 +92,14 @@ async function loadPlan() {
       state.product = null;
       saveUi();
     }
+    // Drop "today" marks for acciones someone deleted in the meantime.
+    const validIds = new Set();
+    state.plan.unidades.forEach((u) => u.objetivos.forEach((o) => o.acciones.forEach((a) => validIds.add(a.id))));
+    let prunedToday = false;
+    state.today.forEach((id) => {
+      if (!validIds.has(id)) { state.today.delete(id); prunedToday = true; }
+    });
+    if (prunedToday) saveToday();
   } catch (e) {
     console.warn("No se pudo cargar el plan desde el servidor.", e);
   }
@@ -123,8 +164,8 @@ async function persistEstado(id, status) {
 }
 
 function setEstado(id, status) {
-  const entry = actionIndex.get(id);
-  if (entry) entry.accion.status = status;
+  const ctx = findAccionContext(id);
+  if (ctx) ctx.accion.status = status;
   if (state.detail && state.detail.id === id) {
     state.detail = { ...state.detail, estado: status };
   }
@@ -163,12 +204,12 @@ function setProduct(p) {
 }
 
 function openDetail(actionId) {
-  const entry = actionIndex.get(actionId);
-  if (!entry) return;
-  const { accion: a, unit, group, objetivo: o } = entry;
+  const ctx = findAccionContext(actionId);
+  if (!ctx) return;
+  const { accion: a, unit, objetivo: o, groupName } = ctx;
   state.detail = {
     id: a.id, unitId: unit.id, unitName: unit.nombre, iso: unit.iso, accent: unit.accent, headBg: unit.headBg, chipBg: unit.chipBg,
-    groupName: group.key === "trans" ? "Transversal" : group.name, objetivo: o.titulo, meta: o.meta,
+    groupName, objetivo: o.titulo, meta: o.meta,
     texto: a.titulo, responsable: a.responsable, plazo: a.plazo, canal: a.canal, estado: a.status,
   };
   render();
@@ -228,6 +269,27 @@ function buildGroups(unit, applyProductFilter, selectedProduct) {
     groups = [...prodGroup, ...transGroup];
   }
   return groups;
+}
+
+function renderToday() {
+  const el = document.getElementById("todayList");
+  const entries = [...state.today].map((id) => findAccionContext(id)).filter(Boolean);
+  if (entries.length === 0) {
+    el.innerHTML = `<div class="today-empty">No tenés tareas marcadas para hoy. Tocá la ${"☆"} en cualquier acción para agregarla acá.</div>`;
+    return;
+  }
+  el.innerHTML = entries.map(({ accion: a, unit, groupName }) => `
+    <div class="today-row" data-status="${a.status}">
+      <button class="status-pill" data-status="${a.status}" data-action="cycle-status" data-action-id="${a.id}" data-current="${a.status}" title="Cambiar estado">
+        <span class="status-dot ${a.status}"></span>${STATUS_LABEL[a.status]}
+      </button>
+      <div class="today-body" data-action="open-detail" data-action-id="${a.id}">
+        <div class="today-texto${a.status === "hecho" ? " done" : ""}">${esc(a.titulo)}</div>
+        <div class="today-context">${esc(unit.nombre)} · ${esc(groupName)}</div>
+      </div>
+      <button class="icon-btn star active" data-action="toggle-today" data-action-id="${a.id}" title="Quitar de hoy">★</button>
+    </div>
+  `).join("");
 }
 
 function renderStats() {
@@ -303,9 +365,9 @@ function renderProductRow() {
   el.classList.add("visible");
 }
 
-function renderAccionRow(unit, group, o, a) {
+function renderAccionRow(unit, a) {
   const status = a.status;
-  actionIndex.set(a.id, { accion: a, unit, group, objetivo: o });
+  const isToday = state.today.has(a.id);
   return `
     <div class="accion-row" data-status="${status}">
       <button class="status-pill" data-status="${status}" data-action="cycle-status" data-action-id="${a.id}" data-current="${status}" title="Cambiar estado">
@@ -320,17 +382,18 @@ function renderAccionRow(unit, group, o, a) {
         </div>
       </div>
       <button class="accion-open-btn" data-action="open-detail" data-action-id="${a.id}" title="Ver detalle">›</button>
+      <button class="icon-btn star${isToday ? " active" : ""}" data-action="toggle-today" data-action-id="${a.id}" title="${isToday ? "Quitar de hoy" : "Marcar para hoy"}">${isToday ? "★" : "☆"}</button>
       <button class="icon-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="accion" data-entity-id="${a.id}" data-entity-label="${esc(a.titulo)}" title="Borrar acción">🗑</button>
     </div>
   `;
 }
 
-function renderObjetivo(unit, group, o) {
+function renderObjetivo(unit, o) {
   const expanded = !!state.expandedObjs[o.id];
   let done = 0;
   const accionesHtml = o.acciones.map((a) => {
     if (a.status === "hecho") done++;
-    return renderAccionRow(unit, group, o, a);
+    return renderAccionRow(unit, a);
   }).join("");
   const pct = o.acciones.length ? Math.round((done / o.acciones.length) * 100) : 0;
   const horizonteDot = HORIZONTE_DOT[o.horizonte] || "#94a3b8";
@@ -369,7 +432,7 @@ function renderGroup(unit, group) {
   const isProducto = group.key !== "trans";
   const objetivosHtml = group.empty
     ? `<div class="group-empty-note">${esc(group.note)}</div>`
-    : group.objetivos.map((o) => renderObjetivo(unit, group, o)).join("");
+    : group.objetivos.map((o) => renderObjetivo(unit, o)).join("");
   return `
     <div class="group">
       <div class="group-head">
@@ -457,6 +520,7 @@ function renderDrawer() {
         <img class="drawer-iso" src="${d.iso}" alt="">
         <span class="drawer-unit-name" style="--accent:${d.accent}">${esc(d.unitName)}</span>
         <span class="drawer-group-chip" style="--accent:${d.accent};--chip-bg:${d.chipBg}">${esc(d.groupName)}</span>
+        <button class="icon-btn star${state.today.has(d.id) ? " active" : ""}" data-action="toggle-today" data-action-id="${d.id}" title="${state.today.has(d.id) ? "Quitar de hoy" : "Marcar para hoy"}">${state.today.has(d.id) ? "★" : "☆"}</button>
         <button class="drawer-close" data-action="close-detail" title="Cerrar">×</button>
       </div>
       <div class="drawer-label drawer-objetivo-label">Objetivo</div>
@@ -605,8 +669,8 @@ function renderModal() {
 }
 
 function render() {
-  actionIndex = new Map();
   renderHeaderProgress();
+  renderToday();
   renderStats();
   renderFilters();
   renderProductRow();
@@ -645,6 +709,10 @@ document.addEventListener("click", (e) => {
       break;
     case "close-detail":
       closeDetail();
+      break;
+    case "toggle-today":
+      e.stopPropagation();
+      toggleToday(target.dataset.actionId);
       break;
     case "open-modal":
       e.stopPropagation();
@@ -693,5 +761,6 @@ document.addEventListener("visibilitychange", () => {
 });
 
 loadUi();
+loadToday();
 render();
 loadPlan();
