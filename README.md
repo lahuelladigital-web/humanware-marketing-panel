@@ -8,7 +8,9 @@ historial de decisiones de producto).
 
 ## Arquitectura
 
-- **`frontend/`** — sitio estático (HTML/CSS/JS vanilla, sin build step).
+- **`backend/frontend/`** — sitio estático (HTML/CSS/JS vanilla, sin build step).
+  Vive dentro de `backend/` para que quede en el mismo directorio que se
+  despliega en producción (ver sección Deploy).
 - **`backend/`** — servidor Express que sirve el frontend y expone una API
   para el estado de las acciones (`Pendiente` / `En progreso` / `Hecho`),
   persistido en SQLite (`node:sqlite`) para que todo el equipo vea el mismo
@@ -33,7 +35,7 @@ corre el servidor.
 ## Estructura de datos
 
 El contenido del plan (unidades, productos, objetivos y acciones) vive en
-`frontend/js/data.js`. Para agregar o editar objetivos/acciones del plan,
+`backend/frontend/js/data.js`. Para agregar o editar objetivos/acciones del plan,
 se edita ese archivo — no requiere tocar el backend.
 
 ## API

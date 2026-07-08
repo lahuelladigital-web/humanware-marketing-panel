@@ -22,7 +22,7 @@ app.put("/api/estados/:id", (req, res) => {
   res.json(saved);
 });
 
-app.use(express.static(path.join(__dirname, "..", "frontend")));
+app.use(express.static(path.join(__dirname, "frontend")));
 
 app.listen(PORT, () => {
   console.log(`Humanware marketing panel running at http://localhost:${PORT}`);
