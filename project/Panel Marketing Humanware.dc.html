@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#eef1f6;color:#1e293b;-webkit-font-smoothing:antialiased;}
+  img{display:block;}
+  a{color:#8E2D9E;text-decoration:none;}
+  a:hover{color:#6d2079;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#c3ccda;border-radius:8px;border:2px solid #eef1f6;}
+  @keyframes drawerIn{from{transform:translateX(24px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <div style="background:#1C0922;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:22px;box-shadow:0 2px 10px rgba(16,26,50,.18);position:sticky;top:0;z-index:30;">
+    <img src="assets/logo-white.png" alt="Humanware Group" style="height:34px;width:auto;">
+    <div style="height:34px;width:1px;background:rgba(255,255,255,.16);"></div>
+    <div style="font-size:12.5px;color:#e7d6ee;line-height:1.3;">Panel de Estrategia de Marketing<br><span style="color:#a98cb5;">Didacta · One Click · Academy — Jul 2026 a Jun 2027</span></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:#a98cb5;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">Avance del plan</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;">{{ overallLabel }}</div>
+      </div>
+      <div style="width:120px;height:8px;background:rgba(255,255,255,.16);border-radius:6px;overflow:hidden;">
+        <div style="height:100%;background:linear-gradient(90deg,#C6E84A,#FF8000);border-radius:6px;width:{{ overallWidth }};transition:width .4s ease;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;padding:26px 32px 60px;max-width:1520px;width:100%;margin:0 auto;">
+
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;">
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:15px;color:#334155;">Pipeline de leads calificados</div>
+      <div style="font-size:12.5px;color:#7a8aa3;">Junio 2026 · fuente CRM</div>
+      <div style="margin-left:auto;font-size:12px;color:#7a8aa3;">Foco del plan: <span style="color:#FF8000;font-weight:600;">más leads calificados para Didacta</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:30px;">
+      <sc-for list="{{ statsView }}" as="s" hint-placeholder-count="2">
+        <div style="background:#fff;border-radius:14px;border:1px solid #e2e7f0;box-shadow:0 1px 2px rgba(16,26,50,.04);overflow:hidden;">
+          <div style="padding:11px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eef1f6;background:{{ s.bg }};">
+{{ s.isoImg }}
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:14px;color:{{ s.accent }};">{{ s.name }}</div>
+            <div style="font-size:11.5px;color:#8493ab;">{{ s.tag }}</div>
+          </div>
+          <div style="display:flex;">
+            <sc-for list="{{ s.items }}" as="it" hint-placeholder-count="3">
+              <div style="flex:1;padding:14px 16px;border-right:1px solid #f0f2f7;">
+                <div style="font-size:11px;color:#8493ab;font-weight:500;margin-bottom:4px;line-height:1.2;">{{ it.label }}</div>
+                <div style="display:flex;align-items:baseline;gap:5px;">
+                  <span style="font-family:'Space Grotesk';font-weight:700;font-size:23px;color:{{ it.color }};line-height:1;">{{ it.value }}</span>
+                  <span style="font-size:12px;color:#9aa7bd;">{{ it.sub }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <button onClick="{{ f.onClick }}" style="cursor:pointer;font-family:'IBM Plex Sans';font-size:13px;font-weight:600;padding:8px 15px;border-radius:9px;border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};transition:all .15s ease;display:flex;align-items:center;gap:7px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:{{ f.dot }};"></span>{{ f.label }}
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12px;color:#7a8aa3;">
+        <span style="font-weight:500;">Estado:</span>
+        <span style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:50%;background:#1f9d63;"></span>Hecho</span>
+        <span style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:50%;background:#e0a020;"></span>En progreso</span>
+        <span style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:50%;background:#94a3b8;"></span>Pendiente</span>
+      </div>
+    </div>
+
+    <sc-if value="{{ productRowShow }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;padding:12px 14px;background:#fff;border:1px solid #e2e7f0;border-radius:12px;">
+        <span style="font-size:12px;color:#7a8aa3;font-weight:600;white-space:nowrap;">Productos de {{ productUnitName }}:</span>
+        <sc-for list="{{ productChips }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.onClick }}" style="cursor:pointer;font-family:'IBM Plex Sans';font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:8px;border:1px solid {{ p.border }};background:{{ p.bg }};color:{{ p.color }};display:flex;align-items:center;gap:7px;">
+            {{ p.label }}<span style="font-size:10px;font-weight:500;opacity:.72;">{{ p.tag }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;">
+      <sc-for list="{{ visibleUnits }}" as="u" hint-placeholder-count="4">
+        <div style="grid-column:{{ u.gridColumn }};background:#fff;border-radius:16px;border:1px solid #e2e7f0;box-shadow:0 1px 3px rgba(16,26,50,.05);overflow:hidden;align-self:start;">
+
+          <div onClick="{{ u.toggle }}" style="cursor:pointer;padding:16px 18px;background:{{ u.headBg }};border-bottom:1px solid {{ u.headBorder }};position:relative;">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:{{ u.accent }};"></div>
+            <div style="display:flex;align-items:center;gap:11px;">
+{{ u.isoImg }}
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ u.accent }};">{{ u.name }}</span>
+              <span style="font-size:11px;font-weight:600;color:{{ u.accent }};background:{{ u.chipBg }};padding:3px 9px;border-radius:20px;">{{ u.tag }}</span>
+              <span style="margin-left:auto;font-size:19px;color:#94a3b8;transform:{{ u.caretRot }};transition:transform .2s ease;line-height:1;">⌄</span>
+            </div>
+            <div style="font-size:12.5px;color:#64748b;margin-top:6px;">{{ u.sub }}</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
+              <div style="flex:1;height:7px;background:#eef1f6;border-radius:6px;overflow:hidden;">
+                <div style="height:100%;background:{{ u.accent }};border-radius:6px;width:{{ u.progressWidth }};transition:width .4s ease;"></div>
+              </div>
+              <div style="font-size:12px;font-weight:600;color:#475569;white-space:nowrap;">{{ u.progressLabel }} acciones</div>
+            </div>
+          </div>
+
+          <sc-if value="{{ u.expanded }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:16px;">
+              <sc-for list="{{ u.groups }}" as="g" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div style="display:flex;align-items:center;gap:9px;">
+                    <span style="width:8px;height:8px;border-radius:2px;background:{{ g.color }};"></span>
+                    <span style="font-family:'Space Grotesk';font-weight:600;font-size:12.5px;color:{{ g.color }};letter-spacing:.01em;">{{ g.name }}</span>
+                    <sc-if value="{{ g.tag }}" hint-placeholder-val="Etiqueta"><span style="font-size:10px;font-weight:500;color:#8493ab;">{{ g.tag }}</span></sc-if>
+                    <span style="flex:1;height:1px;background:#eceff5;"></span>
+                  </div>
+
+                  <sc-if value="{{ g.empty }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px dashed #dbe1ea;border-radius:10px;padding:11px 13px;font-size:12px;color:#7a8aa3;line-height:1.45;background:#fbfcfe;">{{ g.note }}</div>
+                  </sc-if>
+
+                  <sc-for list="{{ g.objetivos }}" as="o" hint-placeholder-count="2">
+                    <div style="border:1px solid #e7ebf3;border-radius:12px;overflow:hidden;background:#fbfcfe;">
+                      <div onClick="{{ o.toggle }}" style="cursor:pointer;padding:12px 14px;">
+                        <div style="display:flex;align-items:flex-start;gap:9px;">
+                          <span style="font-size:10.5px;font-weight:600;color:#5a6b86;background:#eef2f8;padding:3px 8px;border-radius:16px;white-space:nowrap;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:{{ o.horizonteDot }};"></span>{{ o.horizonte }}</span>
+                          <span style="font-weight:600;font-size:13.5px;color:#1e293b;line-height:1.3;flex:1;">{{ o.titulo }}</span>
+                          <span style="font-size:16px;color:#a3b0c6;transform:{{ o.caretRot }};transition:transform .2s ease;line-height:1.2;">⌄</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:9px;padding-left:2px;">
+                          <span style="font-size:11.5px;color:#7a8aa3;">Meta: <span style="color:#475569;font-weight:600;">{{ o.meta }}</span></span>
+                          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                            <div style="width:60px;height:6px;background:#eef1f6;border-radius:5px;overflow:hidden;"><div style="height:100%;background:{{ o.accent }};border-radius:5px;width:{{ o.progressWidth }};"></div></div>
+                            <span style="font-size:11px;font-weight:600;color:#64748b;">{{ o.progressLabel }}</span>
+                          </div>
+                        </div>
+                        <div style="margin-top:9px;font-size:11.5px;font-weight:600;color:{{ o.accent }};display:flex;align-items:center;gap:5px;">
+                          <span style="font-size:14px;transform:{{ o.caretRot }};transition:transform .2s ease;line-height:1;">⌄</span>{{ o.acHint }}
+                        </div>
+                      </div>
+
+                      <sc-if value="{{ o.expanded }}" hint-placeholder-val="{{ true }}">
+                        <div style="border-top:1px solid #eceff5;background:#fff;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                          <sc-for list="{{ o.acciones }}" as="a" hint-placeholder-count="3">
+                            <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border-radius:9px;background:{{ a.rowBg }};">
+                              <button onClick="{{ a.cycle }}" title="Cambiar estado" style="cursor:pointer;flex-shrink:0;margin-top:1px;border:1px solid {{ a.estBorder }};background:{{ a.estBg }};color:{{ a.estText }};font-size:10.5px;font-weight:600;font-family:'IBM Plex Sans';padding:4px 9px;border-radius:16px;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                                <span style="width:7px;height:7px;border-radius:50%;background:{{ a.estDot }};"></span>{{ a.estLabel }}
+                              </button>
+                              <div onClick="{{ a.open }}" style="cursor:pointer;flex:1;min-width:0;">
+                                <div style="font-size:13px;color:#26324a;line-height:1.35;{{ a.textStyle }}">{{ a.texto }}</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+                                  <span style="font-size:10.5px;color:#5a6b86;background:#eef2f8;padding:2px 8px;border-radius:14px;">{{ a.responsable }}</span>
+                                  <span style="font-size:10.5px;color:#5a6b86;background:#eef2f8;padding:2px 8px;border-radius:14px;">{{ a.plazo }}</span>
+                                  <span style="font-size:10.5px;color:#5a6b86;background:#f2eef8;padding:2px 8px;border-radius:14px;">{{ a.canal }}</span>
+                                </div>
+                              </div>
+                              <button onClick="{{ a.open }}" title="Ver detalle" style="cursor:pointer;flex-shrink:0;align-self:center;border:none;background:none;color:#b3bece;font-size:17px;padding:2px 4px;line-height:1;">›</button>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ detail.close }}" style="position:fixed;inset:0;background:rgba(28,9,34,.34);z-index:40;display:flex;justify-content:flex-end;">
+      <div onClick="{{ detail.stop }}" style="width:420px;max-width:92vw;height:100%;background:#fff;box-shadow:-6px 0 30px rgba(16,26,50,.2);animation:drawerIn .22s ease;display:flex;flex-direction:column;">
+        <div style="padding:20px 24px;border-bottom:1px solid #eceff5;background:{{ detail.headBg }};">
+          <div style="display:flex;align-items:center;gap:10px;">
+{{ detail.isoImg }}
+            <span style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ detail.accent }};">{{ detail.unitName }}</span>
+            <span style="font-size:11px;font-weight:600;color:{{ detail.accent }};background:{{ detail.chipBg }};padding:2px 9px;border-radius:16px;">{{ detail.groupName }}</span>
+            <button onClick="{{ detail.close }}" style="margin-left:auto;cursor:pointer;border:none;background:none;font-size:24px;color:#94a3b8;line-height:1;">×</button>
+          </div>
+          <div style="font-size:11.5px;color:#7a8aa3;margin-top:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Objetivo</div>
+          <div style="font-size:13.5px;color:#334155;font-weight:600;margin-top:3px;line-height:1.35;">{{ detail.objetivo }}</div>
+        </div>
+        <div style="padding:22px 24px;overflow-y:auto;flex:1;">
+          <div style="font-size:11.5px;color:#7a8aa3;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Acción</div>
+          <div style="font-family:'Space Grotesk';font-weight:600;font-size:19px;color:#1e293b;line-height:1.3;margin-top:6px;">{{ detail.texto }}</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px;">
+            <div style="background:#f7f9fc;border-radius:11px;padding:13px 15px;">
+              <div style="font-size:11px;color:#8493ab;font-weight:500;">Responsable</div>
+              <div style="font-size:14px;color:#26324a;font-weight:600;margin-top:3px;">{{ detail.responsable }}</div>
+            </div>
+            <div style="background:#f7f9fc;border-radius:11px;padding:13px 15px;">
+              <div style="font-size:11px;color:#8493ab;font-weight:500;">Plazo</div>
+              <div style="font-size:14px;color:#26324a;font-weight:600;margin-top:3px;">{{ detail.plazo }}</div>
+            </div>
+            <div style="background:#f7f9fc;border-radius:11px;padding:13px 15px;">
+              <div style="font-size:11px;color:#8493ab;font-weight:500;">Canal</div>
+              <div style="font-size:14px;color:#26324a;font-weight:600;margin-top:3px;">{{ detail.canal }}</div>
+            </div>
+            <div style="background:#f7f9fc;border-radius:11px;padding:13px 15px;">
+              <div style="font-size:11px;color:#8493ab;font-weight:500;">Meta del objetivo</div>
+              <div style="font-size:14px;color:#26324a;font-weight:600;margin-top:3px;">{{ detail.meta }}</div>
+            </div>
+          </div>
+
+          <div style="font-size:11.5px;color:#7a8aa3;text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-top:24px;">Estado</div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <sc-for list="{{ detail.estadoBtns }}" as="b" hint-placeholder-count="3">
+              <button onClick="{{ b.set }}" style="cursor:pointer;flex:1;font-family:'IBM Plex Sans';font-size:12.5px;font-weight:600;padding:11px 6px;border-radius:10px;border:1.5px solid {{ b.border }};background:{{ b.bg }};color:{{ b.color }};display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .15s ease;">
+                <span style="width:11px;height:11px;border-radius:50%;background:{{ b.dot }};"></span>{{ b.label }}
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:22px;font-size:12.5px;color:#7a8aa3;line-height:1.5;background:#f7f9fc;border-radius:11px;padding:14px 16px;">{{ detail.nota }}</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    let estados = {}, ui = {};
+    try { estados = JSON.parse(localStorage.getItem('hwgmkt.estados')||'{}'); } catch(e){}
+    try { ui = JSON.parse(localStorage.getItem('hwgmkt.ui')||'{}'); } catch(e){}
+    this.state = {
+      estados: estados,
+      filter: ui.filter || 'todas',
+      product: ui.product || null,
+      expandedUnits: ui.expandedUnits || { grupo:false, didacta:true, oneclick:false, academy:false },
+      expandedObjs: ui.expandedObjs || {},
+      detail: null
+    };
+  }
+
+  units(){
+    const A = (t,r,p,c,def)=>({t,r,p,c,def});
+    const O = (titulo,horizonte,meta,prod,acciones)=>({titulo,horizonte,meta,prod,acciones});
+    return [
+      { id:'grupo', root:true, name:'Humanware Group', tag:'Transversal', iso:'assets/icon-color.png',
+        sub:'Marca paraguas · canales y procesos compartidos',
+        accent:'#8E2D9E', headBg:'#f7eef9', headBorder:'#ecdcf1', chipBg:'#efe0f4',
+        productos:[],
+        objetivos:[
+          O('Sistematizar LinkedIn orgánico y outreach','Corto plazo','Cadencia documentada','all',[
+            A('Documentar la cadencia de contenido y comentarios que ya se ejecuta','Mkt Grupo','Q3 2026','LinkedIn','progreso'),
+            A('Formalizar el proceso de outreach en 5 pasos (identificar → conectar → abrir → nutrir → reunión)','Mkt Grupo','Q3 2026','LinkedIn','progreso'),
+            A('Rotar 3 tipos de contenido: perspectiva sectorial, casos/resultados y producto en contexto','Content Lead','Continuo','LinkedIn','progreso'),
+          ]),
+          O('Sumar email marketing como canal de conversión','Corto plazo','Canal activo en Ago 26','all',[
+            A('Definir la plataforma de email (Mailchimp / HubSpot / ActiveCampaign)','Mkt Grupo','Jul 2026','Email','pendiente'),
+            A('Auditar y segmentar la base de contactos por vertical','Mkt Grupo','Jul 2026','CRM','pendiente'),
+            A('Lanzar la secuencia de nurturing de 5 emails','Mkt Grupo','Ago 2026','Email','pendiente'),
+            A('Enviar newsletter mensual segmentada (1er jueves de cada mes)','Mkt Grupo','Mensual','Email','pendiente'),
+          ]),
+          O('Medir y reportar resultados a dirección','Corto plazo','1 reporte / mes','all',[
+            A('Reporte mensual de KPIs de marketing a gerencias','Mkt Grupo','Mensual','Reporte','pendiente'),
+            A('Tablero de lead velocity por unidad y por producto','Mkt Grupo','Q3 2026','Reporte','pendiente'),
+          ]),
+          O('Posicionar a Humanware Group como referente en LinkedIn','Largo plazo','Top Voice en nichos','all',[
+            A('Consolidar la identidad de contenido del grupo (posteo de los jueves)','Content Lead','Continuo','LinkedIn','progreso'),
+            A('Apuntar a referente / Top Voice en los nichos objetivo','Mkt Grupo','Q2 2027','LinkedIn','pendiente'),
+            A('Instagram: marca y cultura de equipo, 2–3 posts por semana','Content Lead','Semanal','Instagram','pendiente'),
+          ]),
+        ]},
+      { id:'didacta', name:'Didacta', tag:'Educación', iso:'assets/didacta-orange.png',
+        sub:'Gestión académica · universidades y colegios privados de LATAM',
+        accent:'#FF8000', headBg:'#fff3e6', headBorder:'#ffe0c2', chipBg:'#ffe6cc',
+        productos:[
+          {id:'d_edu', name:'Didacta Educativa', tag:'Educación Superior'},
+          {id:'d_school', name:'Didacta School', tag:'Secundarios privados'},
+          {id:'d_lite', name:'Didacta Lite', tag:'Instituciones chicas'},
+        ],
+        objetivos:[
+          O('Generar 3 demos calificadas por mes (meta de la unidad)','Corto plazo','3 demos / mes','all',[
+            A('Outreach directo a 10 decisores nuevos/mes (rectores, directores, secretarios académicos)','Mkt Didacta','Mensual','LinkedIn','progreso'),
+            A('Comentarios estratégicos en páginas de universidades y colegios privados','Mkt Didacta','Semanal','LinkedIn','progreso'),
+            A('Seguimiento post-demo dentro de las 48 h e ingreso a nurturing','Comercial','Continuo','Email','progreso'),
+            A('Registrar y calificar cada contacto en el CRM segmentado (frío/tibio/caliente)','Mkt Didacta','Continuo','CRM','progreso'),
+          ]),
+          O('Escalar y expandir el outreach educativo','Mediano plazo','20 contactos / mes','all',[
+            A('Ampliar a un segundo batch de 20 prospectos calificados por mes','Mkt Didacta','Q4 2026','LinkedIn','pendiente'),
+            A('Expansión progresiva a México, Colombia, Chile y Perú','Mkt Didacta','Q1 2027','LinkedIn','pendiente'),
+          ]),
+          O('Sostener contenido de perspectiva sectorial educativa','Corto plazo','1 posteo / semana','all',[
+            A('Posteo semanal de gestión / educación superior (martes)','Content Lead','Semanal','LinkedIn','progreso'),
+            A('2 episodios de Academy con foco en gestión educativa','Content Lead','Q3 2026','Contenido','pendiente'),
+            A('Alimentar la newsletter mensual segmentada de educación','Mkt Grupo','Mensual','Email','pendiente'),
+          ]),
+          O('Capitalizar los 2 eventos educativos confirmados','Mediano plazo','EdTech (2 sep) + Siglo 21 Innova Educa','all',[
+            A('EdTech (2 sep) · Pre-evento: preparar kit institucional, mensajes clave y lista de instituciones objetivo','Mkt Didacta','Ago 2026','Eventos','progreso'),
+            A('EdTech (2 sep) · Durante: registrar contactos de decisores en CRM y agendar demos','Comercial','2 Sep 2026','Eventos','pendiente'),
+            A('Siglo 21 Innova Educa · Pre-evento: confirmar presencia/rol y agendar reuniones previas','Mkt Didacta','Sep 2026','Eventos','pendiente'),
+            A('Siglo 21 Innova Educa · Durante: networking con rectores y directivos, captura de leads','Mkt Didacta','Sep 2026','Eventos','pendiente'),
+            A('Post-evento (ambos): seguimiento dentro de las 48 h e ingreso a nurturing','Comercial','Por evento','Eventos','pendiente'),
+            A('Evaluar una participación activa (panel o charla) en Siglo 21 Innova Educa','Mkt Didacta','Sep 2026','Eventos','pendiente'),
+          ]),
+          O('Documentar un caso de éxito de Didacta','Mediano plazo','1 caso documentado','all',[
+            A('Seleccionar cliente y documentar el caso (post largo + landing)','Mkt Didacta','Q4 2026','Contenido','pendiente'),
+            A('Usar el caso como activo de ventas en las secuencias','Comercial','Q4 2026','Email','pendiente'),
+          ]),
+          O('Foco Educación Superior: demanda en universidades','Corto plazo','universidades +300 alumnos','d_edu',[
+            A('Outreach a rectores, secretarios académicos y responsables de sistemas','Mkt Didacta','Mensual','LinkedIn','progreso'),
+            A('Comentarios en páginas de universidades y redes de gestión (UDUAL, OUI-IOHE)','Mkt Didacta','Semanal','LinkedIn','progreso'),
+            A('Priorizar instituciones con +300 alumnos y gestión académica activa','Mkt Didacta','Q3 2026','CRM','progreso'),
+          ]),
+          O('Foco Secundarios: colegios privados','Corto plazo','colegios secundarios privados','d_school',[
+            A('Outreach a directores de colegios privados (redes CAIEP / AIEPBA)','Mkt Didacta','Mensual','LinkedIn','pendiente'),
+            A('Contenido de gestión escolar y administración de secundarios','Content Lead','Quincenal','LinkedIn','pendiente'),
+          ]),
+          O('Foco Didacta Lite: instituciones chicas','Mediano plazo','institutos y colegios pequeños','d_lite',[
+            A('Mensaje "arranque rápido, menos módulos" para instituciones chicas','Mkt Didacta','Q4 2026','LinkedIn','pendiente'),
+            A('Identificar institutos terciarios y colegios pequeños de la región','Mkt Didacta','Q4 2026','CRM','pendiente'),
+          ]),
+        ]},
+      { id:'oneclick', name:'One Click', tag:'Finanzas', iso:'assets/oc-dark.png',
+        sub:'Ecosistema financiero · SGRs, fondos, FCIs, avales y portales PyME',
+        accent:'#16242B', headBg:'#eef1f4', headBorder:'#d9dfe6', chipBg:'#dde3ea',
+        productos:[
+          {id:'oc_sgr', name:'SGR One Click', tag:'SGRs'},
+          {id:'oc_fci', name:'FCI One Click', tag:'Fondos / FCI'},
+          {id:'oc_aval', name:'Aval One Click', tag:'Fondos de aval'},
+          {id:'oc_pyme', name:'Portal de Financiamiento PyME', tag:'nombre por definir'},
+          {id:'oc_financia', name:'FinancIA', tag:'Portal de Riesgo'},
+          {id:'oc_onb', name:'Onboarding', tag:'Módulo'},
+          {id:'oc_protector', name:'Portal del Socio Protector', tag:'Portal'},
+          {id:'oc_ref', name:'Portal del Referidor', tag:'Portal'},
+          {id:'oc_cliente', name:'Portal del Cliente', tag:'Portal'},
+        ],
+        objetivos:[
+          O('Generar 5 demos calificadas por mes (meta de la unidad)','Corto plazo','5 demos / mes','all',[
+            A('Outreach directo a 10 gerentes de SGR / FCI / ALYC nuevos por mes','Mkt One Click','Mensual','LinkedIn','progreso'),
+            A('Comentarios en CASFOG, CASGRA, CNV, BYMA, fondos y fintechs','Mkt One Click','Semanal','LinkedIn','progreso'),
+            A('Calificar y hacer avanzar las oportunidades activas en el pipeline','Comercial','Continuo','CRM','progreso'),
+            A('Seguimiento de demos programadas y agendadas','Comercial','Continuo','Email','progreso'),
+          ]),
+          O('Sostener contenido sectorial de finanzas','Corto plazo','1 posteo / semana','all',[
+            A('Posteo semanal sobre SGRs, FCIs y mercado de capitales PyME (lunes)','Content Lead','Semanal','LinkedIn','progreso'),
+            A('2 episodios de Academy sobre financiamiento PyME','Content Lead','Q3 2026','Contenido','pendiente'),
+            A('Alimentar la newsletter mensual segmentada de finanzas','Mkt Grupo','Mensual','Email','pendiente'),
+          ]),
+          O('Capitalizar el Foro Iberoamericano (Perú) confirmado','Mediano plazo','Foro Iberoamericano · Perú','all',[
+            A('Foro Iberoamericano (Perú) · Pre-evento: preparar material, definir SGRs/fondos objetivo y agenda de reuniones','Mkt One Click','Q4 2026','Eventos','progreso'),
+            A('Foro Iberoamericano (Perú) · Durante: networking regional y registro de contactos en CRM','Mkt One Click','Q4 2026','Eventos','pendiente'),
+            A('Foro Iberoamericano (Perú) · Post: seguimiento dentro de las 48 h e ingreso a nurturing','Comercial','Por evento','Eventos','pendiente'),
+            A('Evaluar una participación activa (panel o charla) en el Foro','Mkt One Click','Q4 2026','Eventos','pendiente'),
+            A('Sostener asistencia a jornadas de CASFOG / CASGRA y eventos de BYMA / CNV','Mkt One Click','Q3–Q4 2026','Eventos','pendiente'),
+          ]),
+          O('Documentar un caso de éxito de One Click','Mediano plazo','1 caso documentado','all',[
+            A('Documentar caso de una SGR o FCI (post largo + landing)','Mkt One Click','Q4 2026','Contenido','pendiente'),
+          ]),
+          O('Foco SGRs: demanda en sociedades de garantía','Corto plazo','gerentes de SGR','oc_sgr',[
+            A('Outreach a gerentes generales y de operaciones de SGRs (Garantizar, Avalando, Acindar Pymes…)','Mkt One Click','Mensual','LinkedIn','progreso'),
+            A('Comentarios en CASFOG, CASGRA y páginas de SGRs','Mkt One Click','Semanal','LinkedIn','progreso'),
+          ]),
+          O('Foco FCI: administradoras de fondos','Corto plazo','administradoras de FCI','oc_fci',[
+            A('Outreach a administradoras de FCI y áreas de operaciones','Mkt One Click','Mensual','LinkedIn','pendiente'),
+            A('Contenido sobre valuación, CNV y régimen informativo','Content Lead','Quincenal','LinkedIn','pendiente'),
+          ]),
+          O('Foco Aval: fondos de garantía y avales','Mediano plazo','fondos de garantía','oc_aval',[
+            A('Outreach a fondos de garantía provinciales y nacionales','Mkt One Click','Q4 2026','LinkedIn','pendiente'),
+          ]),
+          O('Lanzar y posicionar el Portal de Financiamiento PyME','Mediano plazo','naming + propuesta','oc_pyme',[
+            A('Definir naming del portal y propuesta de valor','Mkt One Click','Q3 2026','Marca','pendiente'),
+            A('Mensaje de originación y acceso al crédito PyME','Content Lead','Q4 2026','LinkedIn','pendiente'),
+          ]),
+          O('Posicionar FinancIA como portal de riesgo','Mediano plazo','gestión de riesgo','oc_financia',[
+            A('Contenido sobre scoring, riesgo y monitoreo continuo','Content Lead','Mensual','LinkedIn','pendiente'),
+            A('Outreach a áreas de riesgo y compliance','Mkt One Click','Q4 2026','LinkedIn','pendiente'),
+          ]),
+        ]},
+      { id:'academy', name:'Humanware Academy', tag:'Contenido', iso:'assets/academy-iso.png',
+        sub:'Canal de contenido y comunidad que nutre a las verticales',
+        accent:'#616E7D', headBg:'#f1f3f5', headBorder:'#e2e6ea', chipBg:'#e4e8ec',
+        productos:[],
+        objetivos:[
+          O('Nutrir a las verticales con contenido y comunidad','Continuo','2 episodios / trimestre','all',[
+            A('Producir 2 episodios por trimestre (educación + finanzas)','Content Lead','Trimestral','Contenido','progreso'),
+            A('Generar clips cortos y reels para Instagram y LinkedIn','Content Lead','Semanal','Instagram','pendiente'),
+            A('Posteo semanal de Academy (miércoles)','Content Lead','Semanal','LinkedIn','progreso'),
+          ]),
+          O('Organizar el primer evento propio de Academy','Largo plazo','1 webinar','all',[
+            A('Webinar de cierre con invitados del sector','Content Lead','Q1 2027','Eventos','pendiente'),
+          ]),
+        ]},
+      { id:'consultoria', name:'Consultoría', tag:'Servicios', iso:'assets/icon-color.png',
+        sub:'Servicios y sistemas a medida · construcción y licenciamiento',
+        accent:'#2D6CDF', headBg:'#eef3fc', headBorder:'#d3e0f6', chipBg:'#dde7fa',
+        productos:[
+          {id:'c_obras', name:'Sistema de Construcción', tag:'gestión de obras · sin nombre', emptyNote:'Sistema de gestión de obras (en definición). Objetivos y acciones de marketing por definir — falta el naming y confirmar el go-to-market.'},
+          {id:'c_ms', name:'Licenciamiento Microsoft', tag:'Partner', emptyNote:'Licenciamiento Microsoft. Objetivos y acciones de marketing por definir.'},
+        ],
+        objetivos:[] },
+    ];
+  }
+
+  saveEstados(estados){ try { localStorage.setItem('hwgmkt.estados', JSON.stringify(estados)); } catch(e){} }
+  saveUi(next){ try { localStorage.setItem('hwgmkt.ui', JSON.stringify({ filter: next.filter, product: next.product, expandedUnits: next.expandedUnits, expandedObjs: next.expandedObjs })); } catch(e){} }
+
+  setEstado(id, val){ this.setState(s=>{ const estados={...s.estados, [id]:val}; this.saveEstados(estados); return {estados}; }); }
+  cycleEstado(id, cur){ const order=['pendiente','progreso','hecho']; this.setEstado(id, order[(order.indexOf(cur)+1)%3]); }
+  toggleUnit(id){ this.setState(s=>{ const expandedUnits={...s.expandedUnits, [id]:!s.expandedUnits[id]}; const ns={...s, expandedUnits}; this.saveUi(ns); return {expandedUnits}; }); }
+  toggleObj(id){ this.setState(s=>{ const expandedObjs={...s.expandedObjs, [id]:!s.expandedObjs[id]}; const ns={...s, expandedObjs}; this.saveUi(ns); return {expandedObjs}; }); }
+  setFilter(f){ this.setState(s=>{ const ns={...s, filter:f, product:null}; this.saveUi(ns); return {filter:f, product:null}; }); }
+  setProduct(p){ this.setState(s=>{ const ns={...s, product:p}; this.saveUi(ns); return {product:p}; }); }
+
+  estStyle(v){
+    if(v==='hecho') return {label:'Hecho', bg:'#e4f4ec', border:'#bfe6d1', text:'#1f7a52', dot:'#1f9d63'};
+    if(v==='progreso') return {label:'En progreso', bg:'#fdf3e3', border:'#f2ddb4', text:'#b7791f', dot:'#e0a020'};
+    return {label:'Pendiente', bg:'#eef1f6', border:'#dde2ec', text:'#647089', dot:'#94a3b8'};
+  }
+
+  renderVals(){
+    const units = this.units();
+    const est = (id, def)=> this.state.estados[id] ?? def;
+    const img = (src,h)=> React.createElement('img',{src,alt:'',style:{height:h+'px',width:'auto',display:'block'}});
+    const single = this.state.filter!=='todas';
+    const horizonteDotMap={'Corto plazo':'#1f9d63','Mediano plazo':'#e0a020','Largo plazo':'#8E2D9E','Continuo':'#2f8ad0'};
+
+    // overall progress
+    let allDone=0, allTot=0;
+    units.forEach(u=>u.objetivos.forEach(o=>o.acciones.forEach(a=>{ allTot++; })));
+    // count with default+override, need ids; recompute below during build for accuracy
+    let doneCount=0, totCount=0;
+
+    const statsView=[
+      { name:'Didacta', tag:'meta 3 demos/mes', accent:'#FF8000', bg:'#fff3e6', iso:'assets/didacta-orange.png', items:[
+        {label:'Demos realizadas', value:'3', sub:'/ 3 ✓', color:'#1f9d63'},
+        {label:'Demos programadas', value:'3', sub:'', color:'#FF8000'},
+        {label:'En seguimiento', value:'5', sub:'', color:'#b7791f'},
+      ]},
+      { name:'One Click', tag:'meta 5 demos/mes', accent:'#16242B', bg:'#eef1f4', iso:'assets/oc-dark.png', items:[
+        {label:'Demos realizadas', value:'3', sub:'/ 5', color:'#b7791f'},
+        {label:'Demos programadas', value:'5', sub:'', color:'#16242B'},
+        {label:'Oport. activas', value:'6', sub:'', color:'#2f8ad0'},
+        {label:'En seguimiento', value:'3', sub:'', color:'#b7791f'},
+      ]},
+    ];
+    statsView.forEach(s=>{ s.isoImg=img(s.iso,20); });
+
+    const fdef=[
+      {id:'todas', label:'Todas', dot:'#16242B'},
+      {id:'grupo', label:'Grupo', dot:'#8E2D9E'},
+      {id:'didacta', label:'Didacta', dot:'#FF8000'},
+      {id:'oneclick', label:'One Click', dot:'#16242B'},
+      {id:'academy', label:'Academy', dot:'#616E7D'},
+      {id:'consultoria', label:'Consultoría', dot:'#2D6CDF'},
+    ];
+    const filters=fdef.map(f=>{ const active=this.state.filter===f.id;
+      return {label:f.label, dot:f.dot, onClick:()=>this.setFilter(f.id),
+        bg: active?'#1C0922':'#fff', color: active?'#fff':'#475569', border: active?'#1C0922':'#dde2ec'}; });
+
+    const selUnit = single ? units.find(u=>u.id===this.state.filter) : null;
+    const productRowShow = !!(selUnit && selUnit.productos.length>0);
+    let productChips=[]; let productUnitName='';
+    if(productRowShow){
+      productUnitName = selUnit.name;
+      const chipDefs=[{id:null,label:'Toda la unidad',tag:''}, ...selUnit.productos.map(p=>({id:p.id,label:p.name,tag:p.tag}))];
+      productChips = chipDefs.map(c=>{ const active=this.state.product===c.id;
+        return {label:c.label, tag:c.tag, onClick:()=>this.setProduct(c.id),
+          bg: active?selUnit.accent:'#fff', color: active?'#fff':selUnit.accent, border: active?selUnit.accent:'#dde2ec'}; });
+    }
+
+    const vis = single ? units.filter(u=>u.id===this.state.filter) : units;
+
+    const visibleUnits = vis.map(u=>{
+      // build groups
+      const trans = u.objetivos.filter(o=>o.prod==='all');
+      let groups = trans.length ? [{ key:'trans', name:'Transversal de la unidad', tag:'', color:'#8493ab', objetivos:trans }] : [];
+      u.productos.forEach(p=>{
+        const objs = u.objetivos.filter(o=>o.prod===p.id);
+        groups.push({ key:p.id, name:p.name, tag:p.tag, color:u.accent,
+          empty: objs.length===0, note: objs.length===0 ? (p.emptyNote || `${p.name} es un módulo complementario: aplica la estrategia general de ${u.name}.`) : '',
+          objetivos:objs });
+      });
+      // filter by selected product
+      if(single && this.state.product){
+        const prodGroup = groups.filter(g=>g.key===this.state.product);
+        const transGroup = groups.filter(g=>g.key==='trans');
+        groups = [...prodGroup, ...transGroup];
+      }
+
+      let uDone=0, uTot=0;
+      const groupsV = groups.map(g=>{
+        const objetivos = g.objetivos.map((o,oi)=>{
+          const objId=`${u.id}|${g.key}|${oi}`;
+          const oExpanded=!!this.state.expandedObjs[objId];
+          let done=0;
+          const acciones=o.acciones.map((a,ai)=>{
+            const id=`${u.id}|${g.key}|${oi}|${ai}`;
+            const v=est(id,a.def); uTot++; totCount++; if(v==='hecho'){uDone++;done++;doneCount++;}
+            const es=this.estStyle(v);
+            return { texto:a.t, responsable:a.r, plazo:a.p, canal:a.c,
+              estLabel:es.label, estBg:es.bg, estBorder:es.border, estText:es.text, estDot:es.dot,
+              textStyle: v==='hecho'?'color:#8493ab;text-decoration:line-through;':'',
+              rowBg: v==='hecho'?'#f7faf8':(v==='progreso'?'#fffdf7':'#fff'),
+              cycle:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.cycleEstado(id,v); },
+              open:()=>this.setState({detail:{unitId:u.id, groupName:(g.key==='trans'?'Transversal':g.name), objetivo:o.titulo, meta:o.meta, texto:a.t, responsable:a.r, plazo:a.p, canal:a.c, id, estado:v}}),
+            };
+          });
+          const pct=o.acciones.length?Math.round(done/o.acciones.length*100):0;
+          return { titulo:o.titulo, horizonte:o.horizonte, meta:o.meta, accent:u.accent,
+            horizonteDot: horizonteDotMap[o.horizonte]||'#94a3b8',
+            expanded:oExpanded, caretRot: oExpanded?'rotate(180deg)':'rotate(0deg)',
+            progressWidth:pct+'%', progressLabel:`${done}/${o.acciones.length}`,
+            acHint: oExpanded?'Ocultar acciones':`Ver ${o.acciones.length} acciones`,
+            toggle:()=>this.toggleObj(objId), acciones };
+        });
+        return { name:g.name, tag:g.tag, color:g.color, empty:!!g.empty, note:g.note||'', objetivos };
+      });
+
+      const upct=uTot?Math.round(uDone/uTot*100):0;
+      const expanded = single ? true : !!this.state.expandedUnits[u.id];
+      return { name:u.name, tag:u.tag, sub:u.sub, accent:u.accent, iso:u.iso, isoImg:img(u.iso,26), headBg:u.headBg, headBorder:u.headBorder, chipBg:u.chipBg,
+        gridColumn: (u.root||single)?'1 / -1':'auto',
+        expanded, caretRot: expanded?'rotate(180deg)':'rotate(0deg)',
+        progressWidth:upct+'%', progressLabel: uTot ? `${uDone}/${uTot}` : 'Sin',
+        toggle:()=>{ if(!single) this.toggleUnit(u.id); }, groups:groupsV };
+    });
+
+    // detail
+    let detail=null;
+    const d=this.state.detail;
+    if(d){
+      const u=units.find(x=>x.id===d.unitId);
+      const v=est(d.id, d.estado);
+      const mk=(val)=>{ const s=this.estStyle(val); const active=v===val;
+        return {label:s.label, dot:s.dot, set:()=>this.setEstado(d.id,val),
+          bg: active?s.bg:'#fff', border: active?s.dot:'#e2e7f0', color: active?s.text:'#8493ab'}; };
+      detail={ unitName:u.name, iso:u.iso, isoImg:img(u.iso,24), accent:u.accent, headBg:u.headBg, chipBg:u.chipBg, groupName:d.groupName,
+        objetivo:d.objetivo, texto:d.texto, responsable:d.responsable, plazo:d.plazo, canal:d.canal, meta:d.meta,
+        estadoBtns:[mk('pendiente'),mk('progreso'),mk('hecho')],
+        nota:`Acción del canal ${d.canal}. Contribuye al objetivo "${d.objetivo}" (meta: ${d.meta}). Tocá un estado para actualizar el avance; se guarda automáticamente.`,
+        close:()=>this.setState({detail:null}), stop:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); } };
+    }
+
+    const overallPct = totCount? Math.round(doneCount/totCount*100):0;
+    return { overallLabel: overallPct+'% · '+doneCount+'/'+totCount+' acciones', overallWidth: overallPct+'%',
+      statsView, filters, productRowShow, productUnitName, productChips, visibleUnits, detailOpen: !!detail, detail };
+  }
+}
+</script>
+</body>
+</html>
