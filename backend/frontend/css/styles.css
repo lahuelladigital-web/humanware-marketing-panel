@@ -239,19 +239,22 @@ button { font-family: inherit; }
 .btn-ghost { background: #fff; color: #64748b; }
 
 .text-btn {
-  cursor: pointer; align-self: flex-start; border: none; background: none; padding: 4px 2px;
-  font-size: 12px; font-weight: 600; color: #8E2D9E;
+  cursor: pointer; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid #dde2ec; background: #fff; padding: 7px 13px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; color: #8E2D9E; transition: all .15s ease;
 }
-.text-btn.danger { color: #c23b3b; }
+.text-btn:hover { background: #f7eef9; border-color: #e4cdec; }
+.text-btn.danger { color: #c23b3b; border-color: #f0d3d3; }
+.text-btn.danger:hover { background: #fbeaea; border-color: #e6b6b6; }
 .add-accion-btn { margin: 2px 8px 4px; }
 
 .icon-btn {
-  cursor: pointer; border: none; background: none; color: #b3bece; font-size: 13px; line-height: 1;
-  padding: 3px 5px; border-radius: 6px; flex-shrink: 0;
+  cursor: pointer; border: 1px solid #e2e7f0; background: #f7f9fc; color: #8493ab; font-size: 13px; line-height: 1;
+  padding: 5px 8px; border-radius: 7px; flex-shrink: 0; transition: all .15s ease;
 }
-.icon-btn:hover { background: #f7e8ea; color: #c23b3b; }
-.icon-btn.danger { color: #cbb8c2; }
-.icon-btn.tiny { font-size: 15px; padding: 0 4px; }
+.icon-btn:hover { background: #fbeaea; color: #c23b3b; border-color: #e6b6b6; }
+.icon-btn.danger { color: #b98fa8; border-color: #ecdde3; background: #fdf8fa; }
+.icon-btn.tiny { font-size: 14px; padding: 3px 7px; }
 
 .unit-toolbar { display: flex; align-items: center; gap: 14px; padding: 0 2px 4px; flex-wrap: wrap; }
 .unit-toolbar .text-btn { align-self: auto; }
