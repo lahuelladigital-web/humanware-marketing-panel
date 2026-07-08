@@ -64,7 +64,7 @@ button { font-family: inherit; }
 .stat-item { flex: 1; padding: 14px 16px; border-right: 1px solid #f0f2f7; }
 .stat-item:last-child { border-right: none; }
 .stat-item-label { font-size: 11px; color: #8493ab; font-weight: 500; margin-bottom: 4px; line-height: 1.2; }
-.stat-item-value-row { display: flex; align-items: baseline; gap: 5px; }
+.stat-item-value-row { display: flex; align-items: center; gap: 5px; }
 .stat-item-value { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 23px; color: var(--value-color); line-height: 1; }
 .stat-item-sub { font-size: 12px; color: #9aa7bd; }
 
@@ -301,6 +301,15 @@ button { font-family: inherit; }
   display: flex; align-items: center; justify-content: center; min-height: 70px;
   border: 1px dashed #c9d2e0; background: #fbfcfe; box-shadow: none;
 }
+
+.stat-item-value-row { cursor: pointer; }
+.stat-item-caret { font-size: 13px; color: #b3bece; margin-left: auto; transition: transform .2s ease; }
+.stat-item-caret.open { transform: rotate(180deg); }
+.stat-item-leads { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eceff5; display: flex; flex-direction: column; gap: 5px; }
+.lead-row { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+.lead-nombre { color: #26324a; font-weight: 600; }
+.lead-empresa { color: #8493ab; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lead-empty { font-size: 11.5px; color: #9aa7bd; }
 
 .group-head .icon-btn { margin-left: 4px; }
 

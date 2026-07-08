@@ -82,6 +82,15 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  -- Named leads behind a stat_item; the item's displayed value is the count of
+  -- these rather than a manually typed number, so it can't drift out of sync.
+  CREATE TABLE IF NOT EXISTS stat_leads (
+    id TEXT PRIMARY KEY,
+    item_id TEXT NOT NULL REFERENCES stat_items(id) ON DELETE CASCADE,
+    empresa TEXT NOT NULL DEFAULT '',
+    nombre TEXT NOT NULL
+  );
+
   -- legacy table from the previous status-only storage; kept only so the
   -- one-time seed below can recover in-progress statuses, then unused.
   CREATE TABLE IF NOT EXISTS estados (
@@ -218,6 +227,7 @@ function getPlan() {
 function getStatCards() {
   const cards = db.prepare("SELECT * FROM stat_cards ORDER BY rowid").all();
   const items = db.prepare("SELECT * FROM stat_items ORDER BY rowid").all();
+  const leads = db.prepare("SELECT * FROM stat_leads ORDER BY rowid").all();
   return cards.map((c) => ({
     id: c.id,
     nombre: c.nombre,
@@ -227,7 +237,12 @@ function getStatCards() {
     iso: c.iso,
     items: items
       .filter((it) => it.card_id === c.id)
-      .map((it) => ({ id: it.id, label: it.label, value: it.value, sub: it.sub, color: it.color })),
+      .map((it) => {
+        const itemLeads = leads
+          .filter((l) => l.item_id === it.id)
+          .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre }));
+        return { id: it.id, label: it.label, value: String(itemLeads.length), sub: it.sub, color: it.color, leads: itemLeads };
+      }),
   }));
 }
 
@@ -307,16 +322,28 @@ function deleteStatCard(id) {
   db.prepare("DELETE FROM stat_cards WHERE id = ?").run(id);
 }
 
-function createStatItem({ cardId, label, value, sub, color }) {
+function createStatItem({ cardId, label, sub, color }) {
   const id = genId("si");
-  db.prepare(`INSERT INTO stat_items (id, card_id, label, value, sub, color) VALUES (?, ?, ?, ?, ?, ?)`).run(
-    id, cardId, label, value, sub || "", color || "#475569"
+  // The "value" column is legacy — the displayed value is now computed from
+  // stat_leads (see getStatCards), so it's just left blank here.
+  db.prepare(`INSERT INTO stat_items (id, card_id, label, value, sub, color) VALUES (?, ?, ?, '', ?, ?)`).run(
+    id, cardId, label, sub || "", color || "#475569"
   );
   return { id };
 }
 
 function deleteStatItem(id) {
   db.prepare("DELETE FROM stat_items WHERE id = ?").run(id);
+}
+
+function createStatLead({ itemId, empresa, nombre }) {
+  const id = genId("sl");
+  db.prepare(`INSERT INTO stat_leads (id, item_id, empresa, nombre) VALUES (?, ?, ?, ?)`).run(id, itemId, empresa || "", nombre);
+  return { id };
+}
+
+function deleteStatLead(id) {
+  db.prepare("DELETE FROM stat_leads WHERE id = ?").run(id);
 }
 
 function createNota({ accionId, texto }) {
@@ -350,4 +377,6 @@ module.exports = {
   deleteStatCard,
   createStatItem,
   deleteStatItem,
+  createStatLead,
+  deleteStatLead,
 };

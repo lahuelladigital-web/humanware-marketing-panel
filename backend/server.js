@@ -136,15 +136,28 @@ app.delete("/api/stat-cards/:id", requireAdmin, (req, res) => {
 });
 
 app.post("/api/stat-items", (req, res) => {
-  const { cardId, label, value, sub, color } = req.body || {};
-  if (!nonEmptyString(cardId) || !nonEmptyString(label) || !nonEmptyString(value)) {
-    return res.status(400).json({ error: "Falta la tarjeta, la etiqueta o el valor del ítem." });
+  const { cardId, label, sub, color } = req.body || {};
+  if (!nonEmptyString(cardId) || !nonEmptyString(label)) {
+    return res.status(400).json({ error: "Falta la tarjeta o la etiqueta del ítem." });
   }
-  res.status(201).json(db.createStatItem({ cardId, label: label.trim(), value: value.trim(), sub, color }));
+  res.status(201).json(db.createStatItem({ cardId, label: label.trim(), sub, color }));
 });
 
 app.delete("/api/stat-items/:id", requireAdmin, (req, res) => {
   db.deleteStatItem(req.params.id);
+  res.status(204).end();
+});
+
+app.post("/api/stat-leads", (req, res) => {
+  const { itemId, empresa, nombre } = req.body || {};
+  if (!nonEmptyString(itemId) || !nonEmptyString(nombre)) {
+    return res.status(400).json({ error: "Falta el ítem o el nombre del lead." });
+  }
+  res.status(201).json(db.createStatLead({ itemId, empresa, nombre: nombre.trim() }));
+});
+
+app.delete("/api/stat-leads/:id", requireAdmin, (req, res) => {
+  db.deleteStatLead(req.params.id);
   res.status(204).end();
 });
 

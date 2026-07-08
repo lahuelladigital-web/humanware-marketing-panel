@@ -50,8 +50,10 @@ más abajo); agregar contenido no la pide.
 - `GET /api/plan` → `{ unidades: [...], statCards: [...] }` con todo el árbol
   del plan y el estado de cada acción.
 - `POST /api/unidades` `/api/productos` `/api/objetivos` `/api/acciones`
-  `/api/stat-cards` `/api/stat-items` — crean cada tipo de entidad (ver
-  `backend/server.js` para el body esperado de cada una).
+  `/api/stat-cards` `/api/stat-items` `/api/stat-leads` — crean cada tipo de
+  entidad (ver `backend/server.js` para el body esperado de cada una). El
+  `value` de un stat-item no se carga a mano: es la cantidad de stat-leads
+  que tiene cargados.
 - `DELETE` en cualquiera de esas mismas rutas + `/:id` — borra esa entidad
   (y lo que cuelga de ella). Requiere el header `x-admin-password` con el
   valor de `ADMIN_PASSWORD`.

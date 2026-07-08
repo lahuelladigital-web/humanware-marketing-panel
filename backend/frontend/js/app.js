@@ -8,7 +8,7 @@ const HORIZONTE_DOT = {
 };
 const DELETE_ENDPOINTS = {
   unidad: "unidades", producto: "productos", objetivo: "objetivos",
-  accion: "acciones", statcard: "stat-cards", statitem: "stat-items",
+  accion: "acciones", statcard: "stat-cards", statitem: "stat-items", statlead: "stat-leads",
 };
 
 const state = {
@@ -17,6 +17,7 @@ const state = {
   product: null,
   expandedUnits: { grupo: false, didacta: true, oneclick: false, academy: false, consultoria: false },
   expandedObjs: {},
+  expandedStatItems: {},
   today: new Set(),
   detail: null,
   modal: null,
@@ -141,7 +142,9 @@ function createEntity(kind, ctx, data) {
     case "add-statcard":
       return apiRequest("POST", "api/stat-cards", { unidadId: data.unidadId, nombre: data.nombre, tag: data.tag });
     case "add-statitem":
-      return apiRequest("POST", "api/stat-items", { cardId: ctx.cardId, label: data.label, value: data.value, sub: data.sub, color: data.color });
+      return apiRequest("POST", "api/stat-items", { cardId: ctx.cardId, label: data.label, sub: data.sub, color: data.color });
+    case "add-statlead":
+      return apiRequest("POST", "api/stat-leads", { itemId: ctx.itemId, empresa: data.empresa, nombre: data.nombre });
     default:
       return Promise.reject(new Error("Acción no reconocida."));
   }
@@ -212,6 +215,11 @@ function toggleUnit(id) {
 function toggleObj(id) {
   state.expandedObjs = { ...state.expandedObjs, [id]: !state.expandedObjs[id] };
   saveUi();
+  render();
+}
+
+function toggleStatItem(id) {
+  state.expandedStatItems = { ...state.expandedStatItems, [id]: !state.expandedStatItems[id] };
   render();
 }
 
@@ -346,18 +354,38 @@ function renderStats() {
         <button class="icon-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statcard" data-entity-id="${s.id}" data-entity-label="${esc(s.nombre)}" title="Borrar tarjeta">🗑</button>
       </div>
       <div class="stat-card-items">
-        ${s.items.map((it) => `
-          <div class="stat-item">
-            <div class="stat-item-label">
-              <span>${esc(it.label)}</span>
-              <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statitem" data-entity-id="${it.id}" data-entity-label="${esc(it.label)}" title="Borrar ítem">×</button>
+        ${s.items.map((it) => {
+          const expanded = !!state.expandedStatItems[it.id];
+          const leads = it.leads || [];
+          const leadsHtml = leads.length
+            ? leads.map((l) => `
+                <div class="lead-row">
+                  <span class="lead-nombre">${esc(l.nombre)}</span>
+                  <span class="lead-empresa">${esc(l.empresa)}</span>
+                  <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statlead" data-entity-id="${l.id}" data-entity-label="${esc(l.nombre)}" title="Borrar lead">×</button>
+                </div>
+              `).join("")
+            : `<div class="lead-empty">Sin leads cargados todavía.</div>`;
+          return `
+            <div class="stat-item">
+              <div class="stat-item-label">
+                <span>${esc(it.label)}</span>
+                <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statitem" data-entity-id="${it.id}" data-entity-label="${esc(it.label)}" title="Borrar ítem">×</button>
+              </div>
+              <div class="stat-item-value-row" data-action="toggle-stat-item" data-item-id="${it.id}">
+                <span class="stat-item-value" style="--value-color:${it.color}">${esc(it.value)}</span>
+                <span class="stat-item-sub">${esc(it.sub)}</span>
+                <span class="stat-item-caret${expanded ? " open" : ""}">⌄</span>
+              </div>
+              ${expanded ? `
+                <div class="stat-item-leads">
+                  ${leadsHtml}
+                  <button class="text-btn" data-action="open-modal" data-modal-kind="add-statlead" data-item-id="${it.id}">+ Lead</button>
+                </div>
+              ` : ""}
             </div>
-            <div class="stat-item-value-row">
-              <span class="stat-item-value" style="--value-color:${it.color}">${esc(it.value)}</span>
-              <span class="stat-item-sub">${esc(it.sub)}</span>
-            </div>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
         <div class="stat-item stat-item-add">
           <button class="text-btn" data-action="open-modal" data-modal-kind="add-statitem" data-card-id="${s.id}">+ Ítem</button>
         </div>
@@ -674,8 +702,7 @@ function renderModal() {
       title = "Nuevo ítem de la tarjeta";
       fields = `
         <label class="form-field">Etiqueta<input name="label" required autofocus placeholder="Ej: Demos realizadas"></label>
-        <label class="form-field">Valor<input name="value" required placeholder="Ej: 3"></label>
-        <label class="form-field">Subtexto<input name="sub" placeholder="Ej: / 5"></label>
+        <label class="form-field">Subtexto<input name="sub" placeholder="Ej: / 5 (meta)"></label>
         <label class="form-field">Color
           <select name="color">
             <option value="#1f9d63">Verde</option>
@@ -685,6 +712,14 @@ function renderModal() {
             <option value="#16242B">Gris oscuro</option>
           </select>
         </label>
+        <p class="modal-warning">El número no se escribe a mano: sale de contar los leads que cargues en el ítem.</p>
+      `;
+      break;
+    case "add-statlead":
+      title = "Nuevo lead";
+      fields = `
+        <label class="form-field">Nombre y apellido<input name="nombre" required autofocus placeholder="Ej: Juan Pérez"></label>
+        <label class="form-field">Empresa<input name="empresa" placeholder="Ej: Universidad del Sol"></label>
       `;
       break;
     case "confirm-delete": {
@@ -749,6 +784,9 @@ document.addEventListener("click", (e) => {
       break;
     case "toggle-obj":
       toggleObj(target.dataset.objId);
+      break;
+    case "toggle-stat-item":
+      toggleStatItem(target.dataset.itemId);
       break;
     case "cycle-status":
       e.stopPropagation();
