@@ -18,6 +18,7 @@ const state = {
   expandedUnits: { grupo: false, didacta: true, oneclick: false, academy: false, consultoria: false },
   expandedObjs: {},
   expandedStatItems: {},
+  unitTab: "objetivos",
   today: new Set(),
   detail: null,
   modal: null,
@@ -236,6 +237,11 @@ function setProduct(p) {
   render();
 }
 
+function setUnitTab(tab) {
+  state.unitTab = tab;
+  render();
+}
+
 function openDetail(actionId) {
   const ctx = findAccionContext(actionId);
   if (!ctx) return;
@@ -436,7 +442,7 @@ function renderProductRow() {
   el.classList.add("visible");
 }
 
-function renderAccionRow(unit, a) {
+function renderAccionRow(unit, a, objetivoTitulo) {
   const status = a.status;
   const isToday = state.today.has(a.id);
   return `
@@ -447,6 +453,7 @@ function renderAccionRow(unit, a) {
       <div class="accion-body" data-action="open-detail" data-action-id="${a.id}">
         <div class="accion-texto${status === "hecho" ? " done" : ""}">${esc(a.titulo)}</div>
         <div class="accion-chips">
+          ${objetivoTitulo ? `<span class="accion-chip objetivo-tag">${esc(objetivoTitulo)}</span>` : ""}
           <span class="accion-chip">${esc(a.responsable)}</span>
           <span class="accion-chip">${esc(a.plazo)}</span>
           <span class="accion-chip canal">${esc(a.canal)}</span>
@@ -519,6 +526,17 @@ function renderGroup(unit, group) {
   `;
 }
 
+function renderFlatAcciones(unit, groups) {
+  const rows = [];
+  groups.forEach((g) => g.objetivos.forEach((o) => o.acciones.forEach((a) => {
+    rows.push(renderAccionRow(unit, a, o.titulo));
+  })));
+  if (rows.length === 0) {
+    return `<div class="group-empty-note">No hay acciones para mostrar acá.</div>`;
+  }
+  return `<div class="acciones-list flat">${rows.join("")}</div>`;
+}
+
 function renderUnit(unit, single) {
   const groups = buildGroups(unit, single, state.product);
 
@@ -555,7 +573,13 @@ function renderUnit(unit, single) {
             <button class="text-btn" data-action="open-modal" data-modal-kind="add-producto" data-unidad-id="${unit.id}">+ Producto</button>
             <button class="text-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="unidad" data-entity-id="${unit.id}" data-entity-label="${esc(unit.nombre)}">🗑 Borrar unidad</button>
           </div>
-          ${groups.map((g) => renderGroup(unit, g)).join("")}
+          ${single ? `
+            <div class="unit-view-tabs">
+              <button class="unit-tab-btn${state.unitTab === "objetivos" ? " active" : ""}" data-action="set-unit-tab" data-tab="objetivos">Por objetivo</button>
+              <button class="unit-tab-btn${state.unitTab === "todas" ? " active" : ""}" data-action="set-unit-tab" data-tab="todas">Todas las acciones</button>
+            </div>
+          ` : ""}
+          ${single && state.unitTab === "todas" ? renderFlatAcciones(unit, groups) : groups.map((g) => renderGroup(unit, g)).join("")}
         </div>
       ` : ""}
     </div>
@@ -800,6 +824,9 @@ document.addEventListener("click", (e) => {
       break;
     case "set-product":
       setProduct(target.dataset.productId);
+      break;
+    case "set-unit-tab":
+      setUnitTab(target.dataset.tab);
       break;
     case "set-status":
       setEstado(target.dataset.actionId, target.dataset.status);
