@@ -290,6 +290,11 @@ function deleteObjetivo(id) {
   db.prepare("DELETE FROM objetivos WHERE id = ?").run(id);
 }
 
+function updateObjetivo(id, { titulo, horizonte, meta }) {
+  const result = db.prepare("UPDATE objetivos SET titulo = ?, horizonte = ?, meta = ? WHERE id = ?").run(titulo, horizonte, meta || "", id);
+  return result.changes > 0;
+}
+
 function createAccion({ objetivoId, titulo, responsable, plazo, canal }) {
   const id = genId("a");
   db.prepare(`
@@ -369,6 +374,7 @@ module.exports = {
   deleteProducto,
   createObjetivo,
   deleteObjetivo,
+  updateObjetivo,
   createAccion,
   deleteAccion,
   setEstado,

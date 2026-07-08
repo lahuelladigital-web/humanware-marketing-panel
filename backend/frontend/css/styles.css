@@ -312,8 +312,9 @@ button { font-family: inherit; }
   cursor: pointer; border: 1px solid #e2e7f0; background: #f7f9fc; color: #8493ab; font-size: 13px; line-height: 1;
   padding: 5px 8px; border-radius: 7px; flex-shrink: 0; transition: all .15s ease;
 }
-.icon-btn:hover { background: #fbeaea; color: #c23b3b; border-color: #e6b6b6; }
+.icon-btn:hover { background: #f1eef6; color: #8E2D9E; border-color: #e4cdec; }
 .icon-btn.danger { color: #b98fa8; border-color: #ecdde3; background: #fdf8fa; }
+.icon-btn.danger:hover { background: #fbeaea; color: #c23b3b; border-color: #e6b6b6; }
 .icon-btn.tiny { font-size: 14px; padding: 3px 7px; }
 .icon-btn.star { color: #c7ba8f; border-color: #ede4c8; background: #fffdf7; font-size: 15px; }
 .icon-btn.star:hover { color: #b7791f; background: #fdf3e3; border-color: #f2ddb4; }

@@ -70,6 +70,19 @@ app.post("/api/objetivos", (req, res) => {
   res.status(201).json(db.createObjetivo({ unidadId, prod, titulo: titulo.trim(), horizonte, meta }));
 });
 
+app.put("/api/objetivos/:id", (req, res) => {
+  const { titulo, horizonte, meta } = req.body || {};
+  if (!nonEmptyString(titulo)) {
+    return res.status(400).json({ error: "Falta el título del objetivo." });
+  }
+  if (!VALID_HORIZONTES.has(horizonte)) {
+    return res.status(400).json({ error: "Horizonte inválido." });
+  }
+  const found = db.updateObjetivo(req.params.id, { titulo: titulo.trim(), horizonte, meta });
+  if (!found) return res.status(404).json({ error: "Objetivo no encontrado." });
+  res.status(204).end();
+});
+
 app.delete("/api/objetivos/:id", requireAdmin, (req, res) => {
   db.deleteObjetivo(req.params.id);
   res.status(204).end();

@@ -482,6 +482,7 @@ function renderObjetivo(unit, o) {
         <div class="objetivo-top">
           <span class="horizonte-chip"><span class="horizonte-dot" style="--horizonte-dot:${horizonteDot}"></span>${esc(o.horizonte)}</span>
           <span class="objetivo-titulo">${esc(o.titulo)}</span>
+          <button class="icon-btn" data-action="open-modal" data-modal-kind="edit-objetivo" data-objetivo-id="${o.id}" data-titulo="${esc(o.titulo)}" data-horizonte="${esc(o.horizonte)}" data-meta="${esc(o.meta)}" title="Editar objetivo">✎</button>
           <button class="icon-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="objetivo" data-entity-id="${o.id}" data-entity-label="${esc(o.titulo)}" title="Borrar objetivo">🗑</button>
           <span class="objetivo-caret${caretClass}">⌄</span>
         </div>
@@ -700,6 +701,20 @@ function renderModal() {
         <label class="form-field">Meta<input name="meta" placeholder="Ej: 3 demos / mes"></label>
       `;
       break;
+    case "edit-objetivo":
+      title = "Editar objetivo";
+      fields = `
+        <label class="form-field">Título<input name="titulo" required autofocus value="${esc(m.titulo)}"></label>
+        <label class="form-field">Horizonte
+          <select name="horizonte">
+            ${["Corto plazo", "Mediano plazo", "Largo plazo", "Continuo"].map((h) => `
+              <option${h === m.horizonte ? " selected" : ""}>${h}</option>
+            `).join("")}
+          </select>
+        </label>
+        <label class="form-field">Meta<input name="meta" placeholder="Ej: 3 demos / mes" value="${esc(m.meta)}"></label>
+      `;
+      break;
     case "add-accion":
       title = "Nueva acción";
       fields = `
@@ -870,6 +885,10 @@ document.addEventListener("submit", async (e) => {
     if (m.kind === "confirm-delete") {
       await deleteEntity(m.entityType, m.entityId, data.password);
       try { sessionStorage.setItem("hwgmkt.adminPw", data.password); } catch (err) { /* storage unavailable */ }
+    } else if (m.kind === "edit-objetivo") {
+      await apiRequest("PUT", `api/objetivos/${encodeURIComponent(m.objetivoId)}`, {
+        titulo: data.titulo, horizonte: data.horizonte, meta: data.meta,
+      });
     } else {
       await createEntity(m.kind, m, data);
     }
