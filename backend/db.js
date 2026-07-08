@@ -216,6 +216,7 @@ function getPlan() {
             plazo: a.plazo,
             canal: a.canal,
             status: a.status,
+            updatedAt: a.updated_at,
             notas: notas
               .filter((n) => n.accion_id === a.id)
               .map((n) => ({ id: n.id, texto: n.texto, hecho: !!n.hecho, createdAt: n.created_at })),

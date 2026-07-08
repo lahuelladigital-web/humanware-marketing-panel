@@ -19,6 +19,11 @@ historial de decisiones de producto).
 - Los filtros de unidad/producto y qué unidades/objetivos están
   expandidos son preferencias de navegación de cada persona — se guardan en
   el `localStorage` del navegador, no en el servidor.
+- **`backend/frontend/reportes.html`** — página aparte (se abre con el botón
+  "Informes" del panel, en una pestaña nueva) con 5 informes calculados en el
+  navegador a partir de `GET /api/plan`: acciones entre fechas (por última
+  actualización de estado), objetivos por unidad, acciones por responsable,
+  progreso por unidad y bitácora reciente.
 
 ## Cómo correrlo
 
