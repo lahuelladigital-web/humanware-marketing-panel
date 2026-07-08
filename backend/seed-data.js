@@ -1,6 +1,7 @@
-// Plan de estrategia de marketing — Humanware Group
-// Estructura: Unidad -> Producto (filtrable) -> Objetivo -> Acción
-// `def` en cada acción es el estado inicial por defecto (antes de cualquier override guardado).
+// One-time seed content for the database, migrated from the original static
+// frontend/js/data.js. Only used by db.js the first time the app boots
+// against an empty database — after that, everything lives in SQLite and
+// this file is never read again.
 
 function accion(t, r, p, c, def) {
   return { t, r, p, c, def };
@@ -10,7 +11,7 @@ function objetivo(titulo, horizonte, meta, prod, acciones) {
   return { titulo, horizonte, meta, prod, acciones };
 }
 
-export const UNITS = [
+const UNITS = [
   {
     id: "grupo",
     root: true,
@@ -218,7 +219,7 @@ export const UNITS = [
   },
 ];
 
-export const PIPELINE_STATS = [
+const PIPELINE_STATS = [
   {
     name: "Didacta",
     tag: "meta 3 demos/mes",
@@ -246,18 +247,4 @@ export const PIPELINE_STATS = [
   },
 ];
 
-export const FILTERS = [
-  { id: "todas", label: "Todas", dot: "#16242B" },
-  { id: "grupo", label: "Grupo", dot: "#8E2D9E" },
-  { id: "didacta", label: "Didacta", dot: "#FF8000" },
-  { id: "oneclick", label: "One Click", dot: "#16242B" },
-  { id: "academy", label: "Academy", dot: "#616E7D" },
-  { id: "consultoria", label: "Consultoría", dot: "#2D6CDF" },
-];
-
-export const HORIZONTE_DOT = {
-  "Corto plazo": "#1f9d63",
-  "Mediano plazo": "#e0a020",
-  "Largo plazo": "#8E2D9E",
-  "Continuo": "#2f8ad0",
-};
+module.exports = { UNITS, PIPELINE_STATS };

@@ -12,9 +12,10 @@ historial de decisiones de producto).
   Vive dentro de `backend/` para que quede en el mismo directorio que se
   despliega en producción (ver sección Deploy).
 - **`backend/`** — servidor Express que sirve el frontend y expone una API
-  para el estado de las acciones (`Pendiente` / `En progreso` / `Hecho`),
-  persistido en SQLite (`node:sqlite`) para que todo el equipo vea el mismo
-  avance en tiempo casi real (polling cada 20s + al volver a la pestaña).
+  para todo el contenido del plan (unidades, productos, objetivos, acciones)
+  y su estado (`Pendiente` / `En progreso` / `Hecho`), persistido en SQLite
+  (`node:sqlite`) para que todo el equipo vea el mismo avance en tiempo casi
+  real (polling cada 20s + al volver a la pestaña).
 - Los filtros de unidad/producto y qué unidades/objetivos están
   expandidos son preferencias de navegación de cada persona — se guardan en
   el `localStorage` del navegador, no en el servidor.
@@ -30,21 +31,34 @@ npm start
 Abrí `http://localhost:3000` (puerto configurable con la variable de entorno `PORT`).
 
 La base SQLite se crea sola en `backend/data/panel.sqlite` la primera vez que
-corre el servidor.
+corre el servidor, con el contenido inicial del plan ya cargado.
 
 ## Estructura de datos
 
-El contenido del plan (unidades, productos, objetivos y acciones) vive en
-`backend/frontend/js/data.js`. Para agregar o editar objetivos/acciones del plan,
-se edita ese archivo — no requiere tocar el backend.
+Todo el plan (unidades, productos, objetivos, acciones y las tarjetas de
+pipeline de arriba) vive en la base SQLite, no en un archivo estático — se
+edita desde el propio panel con los botones **+** (agregar) y **🗑** (borrar)
+en cada nivel. `backend/seed-data.js` sólo se usa una vez, la primera vez que
+arranca el servidor contra una base vacía, para cargar el contenido inicial;
+después de eso no se vuelve a leer.
+
+Borrar cualquier cosa pide una contraseña compartida (ver `ADMIN_PASSWORD`
+más abajo); agregar contenido no la pide.
 
 ## API
 
-- `GET /api/estados` → `{ "<actionId>": "pendiente" | "progreso" | "hecho", ... }`
-- `PUT /api/estados/:id` con body `{ "status": "pendiente" | "progreso" | "hecho" }`
+- `GET /api/plan` → `{ unidades: [...], statCards: [...] }` con todo el árbol
+  del plan y el estado de cada acción.
+- `POST /api/unidades` `/api/productos` `/api/objetivos` `/api/acciones`
+  `/api/stat-cards` `/api/stat-items` — crean cada tipo de entidad (ver
+  `backend/server.js` para el body esperado de cada una).
+- `DELETE` en cualquiera de esas mismas rutas + `/:id` — borra esa entidad
+  (y lo que cuelga de ella). Requiere el header `x-admin-password` con el
+  valor de `ADMIN_PASSWORD`.
+- `PUT /api/acciones/:id/estado` con body `{ "status": "pendiente" | "progreso" | "hecho" }`.
 
-No tiene autenticación: cualquiera con acceso a la URL puede ver y actualizar
-el estado de las acciones.
+No tiene autenticación de usuarios: cualquiera con acceso a la URL puede ver
+y actualizar el plan. Borrar además requiere la contraseña compartida.
 
 ## Deploy (para que el equipo lo use)
 
@@ -56,13 +70,17 @@ en cada deploy.
 2. En [railway.app](https://railway.app), creá un proyecto → **Deploy from GitHub repo** → elegí este repo.
 3. En la configuración del servicio, poné **Root Directory** = `backend`.
 4. Agregá un **Volume** (Settings → Volumes) con mount path `/data`.
-5. Agregá la variable de entorno `DATA_DIR=/data`.
+5. Agregá las variables de entorno `DATA_DIR=/data` y `ADMIN_PASSWORD=<una contraseña a elección>`.
 6. Railway detecta el `package.json`, corre `npm install` y `npm start` solo.
 7. Te da una URL pública (tipo `https://tu-proyecto.up.railway.app`) — esa es la que compartís con el equipo.
 
 Variables de entorno soportadas:
 - `PORT` — puerto del servidor (Railway la setea sola).
 - `DATA_DIR` — carpeta donde vive `panel.sqlite` (default: `backend/data`, para desarrollo local).
+- `ADMIN_PASSWORD` — contraseña compartida que pide el panel antes de borrar
+  cualquier unidad/producto/objetivo/acción/tarjeta. Si no está configurada,
+  todos los borrados quedan deshabilitados (el servidor responde error en vez
+  de dejar borrar sin contraseña).
 
 ## Bundle de diseño original
 
