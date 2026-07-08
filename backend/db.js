@@ -308,6 +308,13 @@ function deleteAccion(id) {
   db.prepare("DELETE FROM acciones WHERE id = ?").run(id);
 }
 
+function updateAccion(id, { titulo, responsable, plazo, canal }) {
+  const result = db.prepare("UPDATE acciones SET titulo = ?, responsable = ?, plazo = ?, canal = ? WHERE id = ?").run(
+    titulo, responsable || "", plazo || "", canal || "", id
+  );
+  return result.changes > 0;
+}
+
 function setEstado(id, status) {
   const updatedAt = new Date().toISOString();
   const result = db.prepare("UPDATE acciones SET status = ?, updated_at = ? WHERE id = ?").run(status, updatedAt, id);
@@ -377,6 +384,7 @@ module.exports = {
   updateObjetivo,
   createAccion,
   deleteAccion,
+  updateAccion,
   setEstado,
   createNota,
   setNotaHecho,

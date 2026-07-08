@@ -266,7 +266,17 @@ function refreshDetailIfOpen() {
   if (!state.detail) return;
   const ctx = findAccionContext(state.detail.id);
   if (!ctx) { state.detail = null; return; }
-  state.detail = { ...state.detail, estado: ctx.accion.status, notas: ctx.accion.notas || [] };
+  state.detail = {
+    ...state.detail,
+    estado: ctx.accion.status,
+    notas: ctx.accion.notas || [],
+    texto: ctx.accion.titulo,
+    responsable: ctx.accion.responsable,
+    plazo: ctx.accion.plazo,
+    canal: ctx.accion.canal,
+    objetivo: ctx.objetivo.titulo,
+    meta: ctx.objetivo.meta,
+  };
 }
 
 function formatFecha(iso) {
@@ -461,6 +471,7 @@ function renderAccionRow(unit, a, objetivoTitulo) {
       </div>
       <button class="accion-open-btn" data-action="open-detail" data-action-id="${a.id}" title="Ver detalle">›</button>
       <button class="icon-btn star${isToday ? " active" : ""}" data-action="toggle-today" data-action-id="${a.id}" title="${isToday ? "Quitar de hoy" : "Marcar para hoy"}">${isToday ? "★" : "☆"}</button>
+      <button class="icon-btn" data-action="open-modal" data-modal-kind="edit-accion" data-accion-id="${a.id}" data-titulo="${esc(a.titulo)}" data-responsable="${esc(a.responsable)}" data-plazo="${esc(a.plazo)}" data-canal="${esc(a.canal)}" title="Editar acción">✎</button>
       <button class="icon-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="accion" data-entity-id="${a.id}" data-entity-label="${esc(a.titulo)}" title="Borrar acción">🗑</button>
     </div>
   `;
@@ -626,6 +637,7 @@ function renderDrawer() {
         <span class="drawer-unit-name" style="--accent:${d.accent}">${esc(d.unitName)}</span>
         <span class="drawer-group-chip" style="--accent:${d.accent};--chip-bg:${d.chipBg}">${esc(d.groupName)}</span>
         <button class="icon-btn star${state.today.has(d.id) ? " active" : ""}" data-action="toggle-today" data-action-id="${d.id}" title="${state.today.has(d.id) ? "Quitar de hoy" : "Marcar para hoy"}">${state.today.has(d.id) ? "★" : "☆"}</button>
+        <button class="icon-btn" data-action="open-modal" data-modal-kind="edit-accion" data-accion-id="${d.id}" data-titulo="${esc(d.texto)}" data-responsable="${esc(d.responsable)}" data-plazo="${esc(d.plazo)}" data-canal="${esc(d.canal)}" title="Editar acción">✎</button>
         <button class="drawer-close" data-action="close-detail" title="Cerrar">×</button>
       </div>
       <div class="drawer-label drawer-objetivo-label">Objetivo</div>
@@ -722,6 +734,15 @@ function renderModal() {
         <label class="form-field">Responsable<input name="responsable" placeholder="Ej: Mkt Didacta"></label>
         <label class="form-field">Plazo<input name="plazo" placeholder="Ej: Mensual"></label>
         <label class="form-field">Canal<input name="canal" placeholder="Ej: LinkedIn"></label>
+      `;
+      break;
+    case "edit-accion":
+      title = "Editar acción";
+      fields = `
+        <label class="form-field">Título<textarea name="titulo" required autofocus>${esc(m.titulo)}</textarea></label>
+        <label class="form-field">Responsable<input name="responsable" placeholder="Ej: Mkt Didacta" value="${esc(m.responsable)}"></label>
+        <label class="form-field">Plazo<input name="plazo" placeholder="Ej: Mensual" value="${esc(m.plazo)}"></label>
+        <label class="form-field">Canal<input name="canal" placeholder="Ej: LinkedIn" value="${esc(m.canal)}"></label>
       `;
       break;
     case "add-statcard":
@@ -888,6 +909,10 @@ document.addEventListener("submit", async (e) => {
     } else if (m.kind === "edit-objetivo") {
       await apiRequest("PUT", `api/objetivos/${encodeURIComponent(m.objetivoId)}`, {
         titulo: data.titulo, horizonte: data.horizonte, meta: data.meta,
+      });
+    } else if (m.kind === "edit-accion") {
+      await apiRequest("PUT", `api/acciones/${encodeURIComponent(m.accionId)}`, {
+        titulo: data.titulo, responsable: data.responsable, plazo: data.plazo, canal: data.canal,
       });
     } else {
       await createEntity(m.kind, m, data);

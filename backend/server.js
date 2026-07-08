@@ -98,6 +98,16 @@ app.post("/api/acciones", (req, res) => {
   res.status(201).json(db.createAccion({ objetivoId, titulo: titulo.trim(), responsable, plazo, canal }));
 });
 
+app.put("/api/acciones/:id", (req, res) => {
+  const { titulo, responsable, plazo, canal } = req.body || {};
+  if (!nonEmptyString(titulo)) {
+    return res.status(400).json({ error: "Falta el título de la acción." });
+  }
+  const found = db.updateAccion(req.params.id, { titulo: titulo.trim(), responsable, plazo, canal });
+  if (!found) return res.status(404).json({ error: "Acción no encontrada." });
+  res.status(204).end();
+});
+
 app.put("/api/acciones/:id/estado", (req, res) => {
   const { status } = req.body || {};
   if (!VALID_ESTADOS.has(status)) {
