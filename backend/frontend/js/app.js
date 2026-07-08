@@ -896,10 +896,14 @@ document.getElementById("modalOverlay").addEventListener("click", (e) => {
 });
 
 // Keep the shared plan in sync with teammates without needing a manual refresh.
-// Skipped while a modal is open so it doesn't wipe out an in-progress form.
-setInterval(() => { if (!state.modal) loadPlan(); }, 20000);
+// Skipped while a modal or the detail drawer is open, since both re-render their
+// forms from scratch — mid-refresh that wipes whatever you're typing and drops focus.
+function canAutoRefresh() {
+  return !state.modal && !state.detail;
+}
+setInterval(() => { if (canAutoRefresh()) loadPlan(); }, 20000);
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && !state.modal) loadPlan();
+  if (document.visibilityState === "visible" && canAutoRefresh()) loadPlan();
 });
 
 loadUi();
