@@ -1,4 +1,4 @@
-# Panel de Estrategia de Marketing — Humanware Group
+# Panel de Estrategia de Marketing y Comercial — Humanware Group
 
 Panel interactivo con la estrategia de marketing de Humanware Group: organigrama
 **Unidad → Producto → Objetivo → Acción**, con filtros, progreso y una vista de
