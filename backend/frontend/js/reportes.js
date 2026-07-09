@@ -28,6 +28,17 @@ function formatFecha(iso) {
   }
 }
 
+// "Hecho" counts as a full acción; "en progreso" counts as half.
+function weightedPct(acciones) {
+  if (!acciones.length) return 0;
+  let weighted = 0;
+  acciones.forEach((a) => {
+    if (a.status === "hecho") weighted += 1;
+    else if (a.status === "progreso") weighted += 0.5;
+  });
+  return Math.round((weighted / acciones.length) * 100);
+}
+
 async function loadPlan() {
   try {
     const res = await fetch("api/plan");
@@ -99,7 +110,7 @@ function renderObjetivosPorUnidad() {
           <tbody>
             ${u.objetivos.map((o) => {
               const done = o.acciones.filter((a) => a.status === "hecho").length;
-              const pct = o.acciones.length ? Math.round((done / o.acciones.length) * 100) : 0;
+              const pct = weightedPct(o.acciones);
               return `
                 <tr>
                   <td>${esc(o.titulo)}</td>
@@ -150,14 +161,15 @@ function renderProgresoPorUnidad() {
       <thead><tr><th>Unidad</th><th>Total</th><th>Pendiente</th><th>En progreso</th><th>Hecho</th><th>% Avance</th></tr></thead>
       <tbody>
         ${state.plan.unidades.map((u) => {
+          const unitAcciones = u.objetivos.flatMap((o) => o.acciones);
           let pendiente = 0, progreso = 0, hecho = 0;
-          u.objetivos.forEach((o) => o.acciones.forEach((a) => {
+          unitAcciones.forEach((a) => {
             if (a.status === "pendiente") pendiente++;
             else if (a.status === "progreso") progreso++;
             else if (a.status === "hecho") hecho++;
-          }));
-          const total = pendiente + progreso + hecho;
-          const pct = total ? Math.round((hecho / total) * 100) : 0;
+          });
+          const total = unitAcciones.length;
+          const pct = weightedPct(unitAcciones);
           return `
             <tr>
               <td>${esc(u.nombre)}</td>

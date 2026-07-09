@@ -301,16 +301,26 @@ function closeModal() {
 
 // ---------- rendering ----------
 
+// "Hecho" counts as a full acción; "en progreso" counts as half — so the
+// percentage reflects partial progress instead of only fully-done work.
+function weightedPct(acciones) {
+  if (!acciones.length) return 0;
+  let weighted = 0;
+  acciones.forEach((a) => {
+    if (a.status === "hecho") weighted += 1;
+    else if (a.status === "progreso") weighted += 0.5;
+  });
+  return Math.round((weighted / acciones.length) * 100);
+}
+
 function renderHeaderProgress() {
   // Always global across every unit, regardless of the active filter —
   // "Avance del plan" reflects the whole plan, not just the current view.
-  let done = 0, total = 0;
-  state.plan.unidades.forEach((u) => u.objetivos.forEach((o) => o.acciones.forEach((a) => {
-    total++;
-    if (a.status === "hecho") done++;
-  })));
-  const pct = total ? Math.round((done / total) * 100) : 0;
-  document.getElementById("overallLabel").textContent = `${pct}% · ${done}/${total} acciones`;
+  const acciones = [];
+  state.plan.unidades.forEach((u) => u.objetivos.forEach((o) => o.acciones.forEach((a) => acciones.push(a))));
+  const done = acciones.filter((a) => a.status === "hecho").length;
+  const pct = weightedPct(acciones);
+  document.getElementById("overallLabel").textContent = `${pct}% · ${done}/${acciones.length} acciones`;
   document.getElementById("overallFill").style.width = pct + "%";
 }
 
@@ -479,12 +489,9 @@ function renderAccionRow(unit, a, objetivoTitulo) {
 
 function renderObjetivo(unit, o) {
   const expanded = !!state.expandedObjs[o.id];
-  let done = 0;
-  const accionesHtml = o.acciones.map((a) => {
-    if (a.status === "hecho") done++;
-    return renderAccionRow(unit, a);
-  }).join("");
-  const pct = o.acciones.length ? Math.round((done / o.acciones.length) * 100) : 0;
+  const done = o.acciones.filter((a) => a.status === "hecho").length;
+  const accionesHtml = o.acciones.map((a) => renderAccionRow(unit, a)).join("");
+  const pct = weightedPct(o.acciones);
   const horizonteDot = HORIZONTE_DOT[o.horizonte] || "#94a3b8";
   const caretClass = expanded ? " open" : "";
   return `
@@ -552,14 +559,13 @@ function renderFlatAcciones(unit, groups) {
 function renderUnit(unit, single) {
   const groups = buildGroups(unit, single, state.product);
 
-  let uDone = 0, uTot = 0;
-  groups.forEach((g) => g.objetivos.forEach((o) => o.acciones.forEach((a) => {
-    uTot++;
-    if (a.status === "hecho") uDone++;
-  })));
+  const unitAcciones = [];
+  groups.forEach((g) => g.objetivos.forEach((o) => o.acciones.forEach((a) => unitAcciones.push(a))));
+  const uDone = unitAcciones.filter((a) => a.status === "hecho").length;
+  const uTot = unitAcciones.length;
 
   const expanded = single ? true : !!state.expandedUnits[unit.id];
-  const upct = uTot ? Math.round((uDone / uTot) * 100) : 0;
+  const upct = weightedPct(unitAcciones);
   const spanFull = unit.root || single;
   const caretClass = expanded ? " open" : "";
   const tab = state.unitTab[unit.id] || "objetivos";
