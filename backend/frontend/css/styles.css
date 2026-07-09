@@ -385,3 +385,45 @@ button { font-family: inherit; }
   font-size: 12.5px; color: #c23b3b; background: #fbeaea; border-radius: 9px; padding: 9px 12px;
 }
 .modal-warning { font-size: 12.5px; color: #7a8aa3; line-height: 1.5; margin: 0; }
+
+/* Mobile */
+@media (max-width: 720px) {
+  .topbar { padding: 12px 16px; gap: 12px; flex-wrap: wrap; }
+  .topbar-divider { display: none; }
+  .topbar-progress { margin-left: 0; }
+  .topbar-btn-right { margin-left: 0; }
+
+  .main { padding: 16px 14px 40px; }
+  .reportes-main { max-width: 100%; }
+
+  .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+  .stat-card-items { flex-wrap: wrap; }
+  .stat-item { flex: 1 1 50%; border-right: none; border-bottom: 1px solid #f0f2f7; }
+
+  .filters-row { gap: 10px; }
+  .status-legend { margin-left: 0; }
+
+  .units-grid { grid-template-columns: 1fr; }
+  .unit-head-top { flex-wrap: wrap; }
+  .unit-toolbar .text-btn.danger { margin-left: 0; }
+
+  .objetivo-top { flex-wrap: wrap; }
+  .objetivo-meta-row { flex-wrap: wrap; gap: 8px; }
+  .objetivo-progress { margin-left: 0; }
+
+  .accion-row { flex-wrap: wrap; }
+  .accion-body { flex-basis: 100%; order: -1; }
+  .accion-open-btn { display: none; }
+
+  .today-row { flex-wrap: wrap; }
+  .today-body { flex-basis: 100%; order: -1; }
+
+  .drawer-panel { width: 100%; max-width: 100vw; }
+  .drawer-info-grid { grid-template-columns: 1fr; }
+
+  .reportes-tabs { gap: 6px; }
+  .reporte-tab-btn { padding: 8px 12px; font-size: 12.5px; }
+  .reportes-content { padding: 14px; overflow-x: auto; }
+  .reportes-filters { flex-wrap: wrap; gap: 12px; }
+  .reportes-table { min-width: 560px; }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Panel de Estrategia de Marketing — Humanware Group",
+  "short_name": "Panel Marketing",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1C0922",
+  "theme_color": "#1C0922",
+  "icons": [
+    { "src": "assets/icon-color.png", "sizes": "any", "type": "image/png" }
+  ]
+}

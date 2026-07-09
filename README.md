@@ -6,6 +6,10 @@ detalle por acción. Implementado a partir del prototipo de Claude Design en
 `project/Panel Marketing Humanware.dc.html` (ver `chats/chat1.md` para el
 historial de decisiones de producto).
 
+Es responsive (usable desde el celular) y tiene un `manifest.json` básico de
+PWA — desde el navegador del celular se puede "Agregar a pantalla de inicio"
+para que quede como un ícono más, abriendo a pantalla completa.
+
 ## Arquitectura
 
 - **`backend/frontend/`** — sitio estático (HTML/CSS/JS vanilla, sin build step).
