@@ -355,6 +355,7 @@ button { font-family: inherit; }
 .lead-row { display: flex; align-items: center; gap: 7px; font-size: 12px; }
 .lead-nombre { color: #26324a; font-weight: 600; }
 .lead-empresa { color: #8493ab; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lead-fecha { color: #9aa7bd; font-size: 11px; white-space: nowrap; }
 .lead-empty { font-size: 11.5px; color: #9aa7bd; }
 
 .group-head .icon-btn { margin-left: 4px; }

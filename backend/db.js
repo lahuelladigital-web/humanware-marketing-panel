@@ -88,7 +88,8 @@ db.exec(`
     id TEXT PRIMARY KEY,
     item_id TEXT NOT NULL REFERENCES stat_items(id) ON DELETE CASCADE,
     empresa TEXT NOT NULL DEFAULT '',
-    nombre TEXT NOT NULL
+    nombre TEXT NOT NULL,
+    fecha TEXT NOT NULL DEFAULT ''
   );
 
   -- legacy table from the previous status-only storage; kept only so the
@@ -99,6 +100,13 @@ db.exec(`
     updated_at TEXT NOT NULL
   );
 `);
+
+// One-time migration for databases created before the `fecha` column existed
+// (CREATE TABLE IF NOT EXISTS above doesn't alter an already-existing table).
+const statLeadsColumns = db.prepare("PRAGMA table_info(stat_leads)").all().map((c) => c.name);
+if (!statLeadsColumns.includes("fecha")) {
+  db.exec("ALTER TABLE stat_leads ADD COLUMN fecha TEXT NOT NULL DEFAULT ''");
+}
 
 function seedIfEmpty() {
   const { count } = db.prepare("SELECT COUNT(*) AS count FROM unidades").get();
@@ -241,7 +249,7 @@ function getStatCards() {
       .map((it) => {
         const itemLeads = leads
           .filter((l) => l.item_id === it.id)
-          .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre }));
+          .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre, fecha: l.fecha }));
         return { id: it.id, label: it.label, value: String(itemLeads.length), sub: it.sub, color: it.color, leads: itemLeads };
       }),
   }));
@@ -349,10 +357,19 @@ function deleteStatItem(id) {
   db.prepare("DELETE FROM stat_items WHERE id = ?").run(id);
 }
 
-function createStatLead({ itemId, empresa, nombre }) {
+function createStatLead({ itemId, empresa, nombre, fecha }) {
   const id = genId("sl");
-  db.prepare(`INSERT INTO stat_leads (id, item_id, empresa, nombre) VALUES (?, ?, ?, ?)`).run(id, itemId, empresa || "", nombre);
+  db.prepare(`INSERT INTO stat_leads (id, item_id, empresa, nombre, fecha) VALUES (?, ?, ?, ?, ?)`).run(
+    id, itemId, empresa || "", nombre, fecha || ""
+  );
   return { id };
+}
+
+function updateStatLead(id, { empresa, nombre, fecha }) {
+  const result = db.prepare("UPDATE stat_leads SET empresa = ?, nombre = ?, fecha = ? WHERE id = ?").run(
+    empresa || "", nombre, fecha || "", id
+  );
+  return result.changes > 0;
 }
 
 function deleteStatLead(id) {
@@ -393,5 +410,6 @@ module.exports = {
   createStatItem,
   deleteStatItem,
   createStatLead,
+  updateStatLead,
   deleteStatLead,
 };

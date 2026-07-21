@@ -67,6 +67,10 @@ más abajo); agregar contenido no la pide.
   (y lo que cuelga de ella). Requiere el header `x-admin-password` con el
   valor de `ADMIN_PASSWORD`.
 - `PUT /api/acciones/:id/estado` con body `{ "status": "pendiente" | "progreso" | "hecho" }`.
+- `PUT /api/objetivos/:id`, `PUT /api/acciones/:id`, `PUT /api/stat-leads/:id` —
+  editan título/horizonte/meta, título/responsable/plazo/canal, o
+  nombre/empresa/fecha respectivamente. No requieren contraseña (editar no es
+  destructivo como borrar).
 - `POST /api/notas` con body `{ "accionId", "texto" }` — agrega una entrada a la
   bitácora de esa acción. `PUT /api/notas/:id` con body `{ "hecho": true|false }`
   tilda/destilda una entrada. No hay borrado de entradas: la bitácora es
