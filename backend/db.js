@@ -89,7 +89,8 @@ db.exec(`
     item_id TEXT NOT NULL REFERENCES stat_items(id) ON DELETE CASCADE,
     empresa TEXT NOT NULL DEFAULT '',
     nombre TEXT NOT NULL,
-    fecha TEXT NOT NULL DEFAULT ''
+    fecha TEXT NOT NULL DEFAULT '',
+    comentarios TEXT NOT NULL DEFAULT ''
   );
 
   -- legacy table from the previous status-only storage; kept only so the
@@ -101,11 +102,14 @@ db.exec(`
   );
 `);
 
-// One-time migration for databases created before the `fecha` column existed
+// One-time migrations for databases created before these columns existed
 // (CREATE TABLE IF NOT EXISTS above doesn't alter an already-existing table).
 const statLeadsColumns = db.prepare("PRAGMA table_info(stat_leads)").all().map((c) => c.name);
 if (!statLeadsColumns.includes("fecha")) {
   db.exec("ALTER TABLE stat_leads ADD COLUMN fecha TEXT NOT NULL DEFAULT ''");
+}
+if (!statLeadsColumns.includes("comentarios")) {
+  db.exec("ALTER TABLE stat_leads ADD COLUMN comentarios TEXT NOT NULL DEFAULT ''");
 }
 
 function seedIfEmpty() {
@@ -249,7 +253,7 @@ function getStatCards() {
       .map((it) => {
         const itemLeads = leads
           .filter((l) => l.item_id === it.id)
-          .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre, fecha: l.fecha }));
+          .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre, fecha: l.fecha, comentarios: l.comentarios }));
         return { id: it.id, label: it.label, value: String(itemLeads.length), sub: it.sub, color: it.color, leads: itemLeads };
       }),
   }));
@@ -357,17 +361,17 @@ function deleteStatItem(id) {
   db.prepare("DELETE FROM stat_items WHERE id = ?").run(id);
 }
 
-function createStatLead({ itemId, empresa, nombre, fecha }) {
+function createStatLead({ itemId, empresa, nombre, fecha, comentarios }) {
   const id = genId("sl");
-  db.prepare(`INSERT INTO stat_leads (id, item_id, empresa, nombre, fecha) VALUES (?, ?, ?, ?, ?)`).run(
-    id, itemId, empresa || "", nombre, fecha || ""
+  db.prepare(`INSERT INTO stat_leads (id, item_id, empresa, nombre, fecha, comentarios) VALUES (?, ?, ?, ?, ?, ?)`).run(
+    id, itemId, empresa || "", nombre, fecha || "", comentarios || ""
   );
   return { id };
 }
 
-function updateStatLead(id, { empresa, nombre, fecha, itemId }) {
-  const result = db.prepare("UPDATE stat_leads SET empresa = ?, nombre = ?, fecha = ?, item_id = ? WHERE id = ?").run(
-    empresa || "", nombre, fecha || "", itemId, id
+function updateStatLead(id, { empresa, nombre, fecha, itemId, comentarios }) {
+  const result = db.prepare("UPDATE stat_leads SET empresa = ?, nombre = ?, fecha = ?, item_id = ?, comentarios = ? WHERE id = ?").run(
+    empresa || "", nombre, fecha || "", itemId, comentarios || "", id
   );
   return result.changes > 0;
 }

@@ -172,22 +172,22 @@ app.delete("/api/stat-items/:id", requireAdmin, (req, res) => {
 });
 
 app.post("/api/stat-leads", (req, res) => {
-  const { itemId, empresa, nombre, fecha } = req.body || {};
+  const { itemId, empresa, nombre, fecha, comentarios } = req.body || {};
   if (!nonEmptyString(itemId) || !nonEmptyString(nombre)) {
     return res.status(400).json({ error: "Falta el ítem o el nombre del lead." });
   }
-  res.status(201).json(db.createStatLead({ itemId, empresa, nombre: nombre.trim(), fecha }));
+  res.status(201).json(db.createStatLead({ itemId, empresa, nombre: nombre.trim(), fecha, comentarios }));
 });
 
 app.put("/api/stat-leads/:id", (req, res) => {
-  const { empresa, nombre, fecha, itemId } = req.body || {};
+  const { empresa, nombre, fecha, itemId, comentarios } = req.body || {};
   if (!nonEmptyString(nombre)) {
     return res.status(400).json({ error: "Falta el nombre del lead." });
   }
   if (!nonEmptyString(itemId)) {
     return res.status(400).json({ error: "Falta el ítem." });
   }
-  const found = db.updateStatLead(req.params.id, { empresa, nombre: nombre.trim(), fecha, itemId });
+  const found = db.updateStatLead(req.params.id, { empresa, nombre: nombre.trim(), fecha, itemId, comentarios });
   if (!found) return res.status(404).json({ error: "Lead no encontrado." });
   res.status(204).end();
 });

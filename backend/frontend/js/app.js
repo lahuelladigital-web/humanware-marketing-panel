@@ -145,7 +145,7 @@ function createEntity(kind, ctx, data) {
     case "add-statitem":
       return apiRequest("POST", "api/stat-items", { cardId: ctx.cardId, label: data.label, sub: data.sub, color: data.color });
     case "add-statlead":
-      return apiRequest("POST", "api/stat-leads", { itemId: ctx.itemId, empresa: data.empresa, nombre: data.nombre, fecha: data.fecha });
+      return apiRequest("POST", "api/stat-leads", { itemId: ctx.itemId, empresa: data.empresa, nombre: data.nombre, fecha: data.fecha, comentarios: data.comentarios });
     default:
       return Promise.reject(new Error("Acción no reconocida."));
   }
@@ -394,11 +394,14 @@ function renderStats() {
           const leadsHtml = leads.length
             ? leads.map((l) => `
                 <div class="lead-row">
-                  <span class="lead-nombre">${esc(l.nombre)}</span>
-                  <span class="lead-empresa">${esc(l.empresa)}</span>
-                  ${l.fecha ? `<span class="lead-fecha">${formatFechaCorta(l.fecha)}</span>` : ""}
-                  <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statlead" data-lead-id="${l.id}" data-nombre="${esc(l.nombre)}" data-empresa="${esc(l.empresa)}" data-fecha="${esc(l.fecha)}" data-item-id="${it.id}" data-card-id="${s.id}" title="Editar lead">✎</button>
-                  <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statlead" data-entity-id="${l.id}" data-entity-label="${esc(l.nombre)}" title="Borrar lead">×</button>
+                  <div class="lead-row-main">
+                    <span class="lead-nombre">${esc(l.nombre)}</span>
+                    <span class="lead-empresa">${esc(l.empresa)}</span>
+                    ${l.fecha ? `<span class="lead-fecha">${formatFechaCorta(l.fecha)}</span>` : ""}
+                    <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statlead" data-lead-id="${l.id}" data-nombre="${esc(l.nombre)}" data-empresa="${esc(l.empresa)}" data-fecha="${esc(l.fecha)}" data-comentarios="${esc(l.comentarios)}" data-item-id="${it.id}" data-card-id="${s.id}" title="Editar lead">✎</button>
+                    <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statlead" data-entity-id="${l.id}" data-entity-label="${esc(l.nombre)}" title="Borrar lead">×</button>
+                  </div>
+                  ${l.comentarios ? `<div class="lead-comentarios">${esc(l.comentarios)}</div>` : ""}
                 </div>
               `).join("")
             : `<div class="lead-empty">Sin leads cargados todavía.</div>`;
@@ -796,6 +799,7 @@ function renderModal() {
         <label class="form-field">Nombre y apellido<input name="nombre" required autofocus placeholder="Ej: Juan Pérez"></label>
         <label class="form-field">Empresa<input name="empresa" placeholder="Ej: Universidad del Sol"></label>
         <label class="form-field">Fecha<input type="date" name="fecha"></label>
+        <label class="form-field">Comentarios<textarea name="comentarios" placeholder="Notas sobre este lead..."></textarea></label>
       `;
       break;
     case "edit-statlead": {
@@ -806,6 +810,7 @@ function renderModal() {
         <label class="form-field">Nombre y apellido<input name="nombre" required autofocus value="${esc(m.nombre)}"></label>
         <label class="form-field">Empresa<input name="empresa" value="${esc(m.empresa)}"></label>
         <label class="form-field">Fecha<input type="date" name="fecha" value="${esc(m.fecha)}"></label>
+        <label class="form-field">Comentarios<textarea name="comentarios">${esc(m.comentarios)}</textarea></label>
         <label class="form-field">Estado
           <select name="itemId">
             ${items.map((it) => `<option value="${it.id}"${it.id === m.itemId ? " selected" : ""}>${esc(it.label)}</option>`).join("")}
@@ -949,7 +954,7 @@ document.addEventListener("submit", async (e) => {
       });
     } else if (m.kind === "edit-statlead") {
       await apiRequest("PUT", `api/stat-leads/${encodeURIComponent(m.leadId)}`, {
-        nombre: data.nombre, empresa: data.empresa, fecha: data.fecha, itemId: data.itemId,
+        nombre: data.nombre, empresa: data.empresa, fecha: data.fecha, itemId: data.itemId, comentarios: data.comentarios,
       });
     } else {
       await createEntity(m.kind, m, data);
