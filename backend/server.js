@@ -180,11 +180,14 @@ app.post("/api/stat-leads", (req, res) => {
 });
 
 app.put("/api/stat-leads/:id", (req, res) => {
-  const { empresa, nombre, fecha } = req.body || {};
+  const { empresa, nombre, fecha, itemId } = req.body || {};
   if (!nonEmptyString(nombre)) {
     return res.status(400).json({ error: "Falta el nombre del lead." });
   }
-  const found = db.updateStatLead(req.params.id, { empresa, nombre: nombre.trim(), fecha });
+  if (!nonEmptyString(itemId)) {
+    return res.status(400).json({ error: "Falta el ítem." });
+  }
+  const found = db.updateStatLead(req.params.id, { empresa, nombre: nombre.trim(), fecha, itemId });
   if (!found) return res.status(404).json({ error: "Lead no encontrado." });
   res.status(204).end();
 });

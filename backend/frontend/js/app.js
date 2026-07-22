@@ -397,7 +397,7 @@ function renderStats() {
                   <span class="lead-nombre">${esc(l.nombre)}</span>
                   <span class="lead-empresa">${esc(l.empresa)}</span>
                   ${l.fecha ? `<span class="lead-fecha">${formatFechaCorta(l.fecha)}</span>` : ""}
-                  <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statlead" data-lead-id="${l.id}" data-nombre="${esc(l.nombre)}" data-empresa="${esc(l.empresa)}" data-fecha="${esc(l.fecha)}" title="Editar lead">✎</button>
+                  <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statlead" data-lead-id="${l.id}" data-nombre="${esc(l.nombre)}" data-empresa="${esc(l.empresa)}" data-fecha="${esc(l.fecha)}" data-item-id="${it.id}" data-card-id="${s.id}" title="Editar lead">✎</button>
                   <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statlead" data-entity-id="${l.id}" data-entity-label="${esc(l.nombre)}" title="Borrar lead">×</button>
                 </div>
               `).join("")
@@ -798,14 +798,22 @@ function renderModal() {
         <label class="form-field">Fecha<input type="date" name="fecha"></label>
       `;
       break;
-    case "edit-statlead":
+    case "edit-statlead": {
       title = "Editar lead";
+      const card = state.plan.statCards.find((c) => c.id === m.cardId);
+      const items = card ? card.items : [];
       fields = `
         <label class="form-field">Nombre y apellido<input name="nombre" required autofocus value="${esc(m.nombre)}"></label>
         <label class="form-field">Empresa<input name="empresa" value="${esc(m.empresa)}"></label>
         <label class="form-field">Fecha<input type="date" name="fecha" value="${esc(m.fecha)}"></label>
+        <label class="form-field">Estado
+          <select name="itemId">
+            ${items.map((it) => `<option value="${it.id}"${it.id === m.itemId ? " selected" : ""}>${esc(it.label)}</option>`).join("")}
+          </select>
+        </label>
       `;
       break;
+    }
     case "confirm-delete": {
       danger = true;
       submitLabel = "Borrar";
@@ -941,7 +949,7 @@ document.addEventListener("submit", async (e) => {
       });
     } else if (m.kind === "edit-statlead") {
       await apiRequest("PUT", `api/stat-leads/${encodeURIComponent(m.leadId)}`, {
-        nombre: data.nombre, empresa: data.empresa, fecha: data.fecha,
+        nombre: data.nombre, empresa: data.empresa, fecha: data.fecha, itemId: data.itemId,
       });
     } else {
       await createEntity(m.kind, m, data);

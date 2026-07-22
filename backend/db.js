@@ -365,9 +365,9 @@ function createStatLead({ itemId, empresa, nombre, fecha }) {
   return { id };
 }
 
-function updateStatLead(id, { empresa, nombre, fecha }) {
-  const result = db.prepare("UPDATE stat_leads SET empresa = ?, nombre = ?, fecha = ? WHERE id = ?").run(
-    empresa || "", nombre, fecha || "", id
+function updateStatLead(id, { empresa, nombre, fecha, itemId }) {
+  const result = db.prepare("UPDATE stat_leads SET empresa = ?, nombre = ?, fecha = ?, item_id = ? WHERE id = ?").run(
+    empresa || "", nombre, fecha || "", itemId, id
   );
   return result.changes > 0;
 }
