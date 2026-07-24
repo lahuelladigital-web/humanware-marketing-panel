@@ -385,7 +385,6 @@ function renderStats() {
         <img class="stat-card-iso" src="${s.iso}" alt="">
         <div class="stat-card-name" style="--accent:${s.accent}">${esc(s.nombre)}</div>
         <div class="stat-card-tag">${esc(s.tag)}</div>
-        <button class="icon-btn danger" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statcard" data-entity-id="${s.id}" data-entity-label="${esc(s.nombre)}" title="Borrar tarjeta">🗑</button>
       </div>
       <div class="stat-card-items">
         ${s.items.map((it) => {
@@ -410,7 +409,6 @@ function renderStats() {
               <div class="stat-item-label">
                 <span>${esc(it.label)}</span>
                 <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statitem" data-item-id="${it.id}" data-label="${esc(it.label)}" data-sub="${esc(it.sub)}" data-color="${esc(it.color)}" title="Editar ítem">✎</button>
-                <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statitem" data-entity-id="${it.id}" data-entity-label="${esc(it.label)}" title="Borrar ítem">×</button>
               </div>
               <div class="stat-item-value-row" data-action="toggle-stat-item" data-item-id="${it.id}">
                 <span class="stat-item-value" style="--value-color:${it.color}">${esc(it.value)}</span>

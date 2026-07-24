@@ -340,7 +340,6 @@ button { font-family: inherit; }
 .units-toolbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
 
 .stat-card-head { position: relative; }
-.stat-card-head .icon-btn { margin-left: auto; }
 .stat-item-label { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .stat-item-add { display: flex; align-items: center; justify-content: center; }
 .stat-card-add {
