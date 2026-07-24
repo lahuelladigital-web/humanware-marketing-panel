@@ -409,6 +409,7 @@ function renderStats() {
             <div class="stat-item">
               <div class="stat-item-label">
                 <span>${esc(it.label)}</span>
+                <button class="icon-btn tiny" data-action="open-modal" data-modal-kind="edit-statitem" data-item-id="${it.id}" data-label="${esc(it.label)}" data-sub="${esc(it.sub)}" data-color="${esc(it.color)}" title="Editar ítem">✎</button>
                 <button class="icon-btn danger tiny" data-action="open-modal" data-modal-kind="confirm-delete" data-entity-type="statitem" data-entity-id="${it.id}" data-entity-label="${esc(it.label)}" title="Borrar ítem">×</button>
               </div>
               <div class="stat-item-value-row" data-action="toggle-stat-item" data-item-id="${it.id}">
@@ -793,6 +794,22 @@ function renderModal() {
         <p class="modal-warning">El número no se escribe a mano: sale de contar los leads que cargues en el ítem.</p>
       `;
       break;
+    case "edit-statitem":
+      title = "Editar ítem";
+      fields = `
+        <label class="form-field">Etiqueta<input name="label" required autofocus value="${esc(m.label)}" placeholder="Ej: 1 - Programada"></label>
+        <label class="form-field">Subtexto<input name="sub" value="${esc(m.sub)}" placeholder="Ej: / 5 (meta)"></label>
+        <label class="form-field">Color
+          <select name="color">
+            ${[
+              ["#1f9d63", "Verde"], ["#FF8000", "Naranja"], ["#2f8ad0", "Azul"],
+              ["#b7791f", "Ámbar"], ["#16242B", "Gris oscuro"],
+            ].map(([val, label]) => `<option value="${val}"${val === m.color ? " selected" : ""}>${label}</option>`).join("")}
+          </select>
+        </label>
+        <p class="modal-warning">Los ítems se ordenan alfabéticamente por la etiqueta — poné un número adelante (ej. "1 - Programada") para controlar el orden.</p>
+      `;
+      break;
     case "add-statlead":
       title = "Nuevo lead";
       fields = `
@@ -955,6 +972,10 @@ document.addEventListener("submit", async (e) => {
     } else if (m.kind === "edit-statlead") {
       await apiRequest("PUT", `api/stat-leads/${encodeURIComponent(m.leadId)}`, {
         nombre: data.nombre, empresa: data.empresa, fecha: data.fecha, itemId: data.itemId, comentarios: data.comentarios,
+      });
+    } else if (m.kind === "edit-statitem") {
+      await apiRequest("PUT", `api/stat-items/${encodeURIComponent(m.itemId)}`, {
+        label: data.label, sub: data.sub, color: data.color,
       });
     } else {
       await createEntity(m.kind, m, data);

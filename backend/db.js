@@ -255,7 +255,10 @@ function getStatCards() {
           .filter((l) => l.item_id === it.id)
           .map((l) => ({ id: l.id, empresa: l.empresa, nombre: l.nombre, fecha: l.fecha, comentarios: l.comentarios }));
         return { id: it.id, label: it.label, value: String(itemLeads.length), sub: it.sub, color: it.color, leads: itemLeads };
-      }),
+      })
+      // Sorted by label rather than insertion order, so a "1 - ", "2 - " ... prefix
+      // on the label is enough to control the display order without a separate field.
+      .sort((a, b) => a.label.localeCompare(b.label, "es", { numeric: true })),
   }));
 }
 
@@ -357,6 +360,13 @@ function createStatItem({ cardId, label, sub, color }) {
   return { id };
 }
 
+function updateStatItem(id, { label, sub, color }) {
+  const result = db.prepare("UPDATE stat_items SET label = ?, sub = ?, color = ? WHERE id = ?").run(
+    label, sub || "", color || "#475569", id
+  );
+  return result.changes > 0;
+}
+
 function deleteStatItem(id) {
   db.prepare("DELETE FROM stat_items WHERE id = ?").run(id);
 }
@@ -412,6 +422,7 @@ module.exports = {
   createStatCard,
   deleteStatCard,
   createStatItem,
+  updateStatItem,
   deleteStatItem,
   createStatLead,
   updateStatLead,

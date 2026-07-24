@@ -166,6 +166,16 @@ app.post("/api/stat-items", (req, res) => {
   res.status(201).json(db.createStatItem({ cardId, label: label.trim(), sub, color }));
 });
 
+app.put("/api/stat-items/:id", (req, res) => {
+  const { label, sub, color } = req.body || {};
+  if (!nonEmptyString(label)) {
+    return res.status(400).json({ error: "Falta la etiqueta del ítem." });
+  }
+  const found = db.updateStatItem(req.params.id, { label: label.trim(), sub, color });
+  if (!found) return res.status(404).json({ error: "Ítem no encontrado." });
+  res.status(204).end();
+});
+
 app.delete("/api/stat-items/:id", requireAdmin, (req, res) => {
   db.deleteStatItem(req.params.id);
   res.status(204).end();
