@@ -1,2 +1,5 @@
 node_modules/
 backend/data/*.sqlite
+
+# Permisos locales de Claude Code (pueden incluir contraseñas de comandos aprobados)
+.claude/settings.local.json
